@@ -16,7 +16,7 @@ export default function MasterplaceCTA() {
         fontSize: "16px", fontWeight: "600", cursor: "pointer",
         fontFamily: "inherit",
       }}>
-        Post a Job
+        Post my Job
       </button>
     </div>
   );

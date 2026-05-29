@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { FaHome } from "react-icons/fa";
+import { FaArrowTrendUp } from "react-icons/fa6";
 import { GrUserWorker } from "react-icons/gr";
 
 const CheckIcon = () => (
@@ -131,7 +132,7 @@ export default function RoleSelector() {
               fontFamily: "inherit",
             }}
           >
-            Post your project
+            Post my Job
             <ArrowIcon />
           </button>
         </div>
@@ -205,8 +206,8 @@ export default function RoleSelector() {
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
           >
-            Join as a Pro
-            <TrendIcon />
+            Join Quote My Job Trade Directory
+            <FaArrowTrendUp />
           </button>
         </div>
 

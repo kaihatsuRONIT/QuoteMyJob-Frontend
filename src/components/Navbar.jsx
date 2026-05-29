@@ -2,16 +2,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { FaRegUserCircle } from "react-icons/fa";
 
 const NavBar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
+  const user = {
+    role: "admin"
+  };
 
 
   const links = [
     { tag: "Home", link: "/home" },
     { tag: "About Us", link: "/about-us" },
-    { tag: "Team", link: "/team" },
+    // { tag: "Team", link: "/team" },
     { tag: "Directory", link: "/directory" },
     { tag: "Magazine", link: "/magazine" },
     { tag: "Blog", link: "/blog" },
@@ -21,7 +25,7 @@ const NavBar = () => {
   return (
     <nav
       className="w-full sticky top-0 z-50"
-      style={{ backgroundColor: "#01192F", fontFamily:"Work sans" }}
+      style={{ backgroundColor: "#01192F", fontFamily: "Work sans" }}
     >
       <div className="w-full">
         <div className="flex items-center justify-between h-25 pr-15">
@@ -29,8 +33,8 @@ const NavBar = () => {
           <div className="flex-shrink-0">
             <Link href={"/"}>
               <img
-                className="h-58 w-auto object-cover"
-                src="websiteLogoBgRem.png"
+                className="h-20 w-auto object-cover pl-10"
+                src="/websiteLogo.png"
                 alt="QuoteMyJob"
               />
             </Link>
@@ -52,9 +56,39 @@ const NavBar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:block flex-shrink-0">
-            <button style={{ backgroundColor: "#FF7E00" }} className=" transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl">
-              Login / Signup
-            </button>
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {
+                  user.role === "customer" ? (
+                    <a href={`${user.role}/dashboard/jobs-posted`}>
+                      <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
+                        Open Orders
+                      </button>
+                    </a>
+                  ) : (
+                    <a href={`${user.role}/dashboard/overview`}>
+                      <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
+                        Open Dashboard
+                      </button>
+                    </a>
+                  )
+                }
+                {
+                  user?.avatar ? (
+                    <img src={user.avatar} alt={user.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
+                  ) : (
+
+                    <FaRegUserCircle color="white" size={40} />
+                  )
+                }
+              </div>
+            ) : (
+              <a href="/login">
+                <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
+                  Login / Signup
+                </button>
+              </a>
+            )}
           </div>
 
           {/* Mobile Hamburger */}
@@ -99,9 +133,11 @@ const NavBar = () => {
               {link.tag}
             </a>
           ))}
-          <button className="mt-3 bg-orange-400 hover:bg-orange-500 transition-colors duration-200 text-white font-bold text-sm px-5 py-2.5 rounded-xl w-full">
-            Login / Signup
-          </button>
+          <a href="/login">
+            <button className="mt-3 bg-orange-400 hover:bg-orange-500 transition-colors duration-200 text-white font-bold text-sm px-5 py-2.5 rounded-xl w-full cursor-pointer">
+              Login / Signup
+            </button>
+          </a>
         </div>
       </div>
     </nav>

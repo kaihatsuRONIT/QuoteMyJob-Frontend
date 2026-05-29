@@ -2,8 +2,8 @@
 
 const footerLinks = [
   { heading: "Marketplace", links: ["Browse Categories", "For Tradespeople", "Success Stories"] },
-  { heading: "Resources",   links: ["Safety & Trust", "Support Center", "Help Guides"] },
-  { heading: "Company",     links: ["Contact Info", "About Us", "Careers"] },
+  { heading: "Resources", links: ["Safety & Trust", "Support Center", "Help Guides"] },
+  { heading: "Company", links: ["Contact Info", "About Us", "Careers"] },
 ];
 
 export default function Footer() {
@@ -24,14 +24,12 @@ export default function Footer() {
       `}</style>
 
       {/* Main */}
-      <div className="footer-grid" style={{ maxWidth: "100vw", margin: "0 auto", padding: "56px", justifyContent:"space-evenly" }}>
+      <div className="footer-grid" style={{ maxWidth: "100vw", margin: "0 auto", padding: "56px", justifyContent: "space-evenly" }}>
 
         {/* Brand */}
-        <div style={{marginLeft:"-20px"}}>
-          <div style={{ marginBottom: "16px"}}>
-            <img src="/websiteLogoBgRem.png" style={{ width: "auto", height: "auto", mixBlendMode: "screen", marginTop:"-52px" }} />
-          </div>
-          <p style={{ fontSize: "13px", color: "#94a3b8", lineHeight: 1.7, margin: 0, maxWidth: "200px", margin:"auto", marginTop:"-73px" }}>
+        <div>
+          <img src="/websiteLogoBgRem.png" style={{ width: "auto", height: "70px", paddingLeft:"30px" }} />
+          <p style={{ fontSize: "13px", color: "#94a3b8", lineHeight: 1.7, margin: 0, maxWidth: "200px", margin: "auto", marginTop:"15px" }}>
             Connecting the best trades with the best projects since 2024.
           </p>
         </div>
@@ -60,7 +58,7 @@ export default function Footer() {
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
 
       {/* Bottom bar */}
-      <div className="footer-bottom" style={{ maxWidth: "100vw", padding: "20px 40px", justifyContent:"space-between" }}>
+      <div className="footer-bottom" style={{ maxWidth: "100vw", padding: "20px 40px", justifyContent: "space-between" }}>
         <span style={{ fontSize: "12px", color: "#64748b" }}>
           © 2026 Quotemyjob. Built for professionals.
         </span>

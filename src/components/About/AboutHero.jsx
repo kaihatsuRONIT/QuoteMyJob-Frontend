@@ -60,7 +60,7 @@ export default function AboutHero() {
             fontSize: "15px", fontWeight: "600", cursor: "pointer",
             fontFamily: "inherit",
           }}>
-            Meet the Team
+            Terms & Conditions
           </button>
         </div>
 

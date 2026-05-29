@@ -84,12 +84,12 @@ export default function BusinessCTA() {
             background: "#f97316", color: "#fff", border: "none",
             borderRadius: "10px", padding: "14px 28px",
             fontSize: "15px", fontWeight: "600", cursor: "pointer", fontFamily: "inherit",
-          }}>Join as a Tradesperson</button>
+          }}>Join Tradesperson Directory</button>
           <button style={{
             background: "#fff", color: "#0f172a", border: "none",
             borderRadius: "10px", padding: "14px 28px",
             fontSize: "15px", fontWeight: "600", cursor: "pointer", fontFamily: "inherit",
-          }}>Success Stories</button>
+          }}>Success Stories & Reviews</button>
         </div>
       </div>
 

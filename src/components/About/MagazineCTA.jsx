@@ -44,10 +44,6 @@ export default function MagazineCTA() {
                                 <CiMail size={14} color="#94a3b8" />
                                 <span style={{ fontSize: "13px", color: "#94a3b8" }}>hello@quotemyjob.com</span>
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                <FaPhoneAlt size={14} color="#94a3b8" />
-                                <span style={{ fontSize: "13px", color: "#94a3b8" }}>+44 (0) 800 123 4567</span>
-                            </div>
                         </div>
                     </div>
                 </div>

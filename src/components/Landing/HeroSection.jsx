@@ -85,8 +85,6 @@ const HeroSection = () => {
             The{" "}
             <span style={{ color: "#e87722" }}>UK &amp; Ireland&apos;s</span>
             <br />
-            Free-of-charge
-            <br />
             Premier <span style={{ color: "#e87722" }}>Building</span>
             <br />
             <span style={{ color: "#e87722" }}>Trade Directory</span>
@@ -175,7 +173,7 @@ const HeroSection = () => {
                 transition: "background 0.15s",
               }}
             >
-              Post a Job
+              Post my Job
             </button>
           </div>
         </div>

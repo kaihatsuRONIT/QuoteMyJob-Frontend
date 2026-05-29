@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { IoShieldCheckmark } from "react-icons/io5";
 import { MdPerson, MdAlternateEmail, MdEmail, MdPhone, MdLocationOn, MdLock, MdLockClock, MdVisibilityOff, MdVisibility } from "react-icons/md";
 
 const fields = {
@@ -63,12 +64,30 @@ export default function SignUp() {
 
         {/* Heading */}
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <h1 style={{ fontSize: "40px", fontWeight: "600", fontFamily: "Manrope, sans-serif", color: "#0f172a", margin: "0 0 12px" }}>
-            Join the Digital Foreman
-          </h1>
-          <p style={{ fontSize: "15px", color: "#64748b", lineHeight: 1.7, margin: 0 }}>
-            Your dream project is just a few quotes away. Connect with the best local tradespeople today.
-          </p>
+          {
+            role === "customer" ? (
+              <>
+                <h1 style={{ fontSize: "40px", fontWeight: "600", fontFamily: "Manrope, sans-serif", color: "#0f172a", margin: "0 0 12px" }}>
+                  Join the Digital Foreman
+                </h1>
+                <p style={{ fontSize: "15px", color: "#64748b", lineHeight: 1.7, margin: 0 }}>
+                  Your dream project is just a few quotes away. Connect with the best local tradespeople today.
+                </p>
+              </>
+            ) : (
+              <>
+              <IoShieldCheckmark style={{margin: '0 auto', textAlign: 'center'}} size={30}/>
+                <h1 style={{ fontSize: "40px", fontWeight: "600", fontFamily: "Manrope, sans-serif", color: "#0f172a", margin: "0 0 12px" }}>
+                  Build Your Future
+                </h1>
+                <p style={{ fontSize: "15px", color: "#64748b", lineHeight: 1.7, margin: 0, maxWidth:"350px",margin: '0 auto', textAlign: 'center'}}>
+                  Join the elite network of professional
+                  tradespeople and secure high-value contracts
+                  today.
+                </p>
+              </>
+            )
+          }
         </div>
 
         {/* Card */}

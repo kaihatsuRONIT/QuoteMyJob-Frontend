@@ -29,7 +29,7 @@ export default function ReadyToBuild() {
             fontSize: "13px", fontWeight: "700", letterSpacing: "1px",
             cursor: "pointer", padding: 0, marginTop: "8px", fontFamily: "inherit",
           }}>
-            POST A JOB <BsArrowRight size={22}/>
+            Post my Job <BsArrowRight size={22}/>
           </button>
         </div>
 
@@ -51,7 +51,7 @@ export default function ReadyToBuild() {
             fontSize: "13px", fontWeight: "700", letterSpacing: "1px",
             cursor: "pointer", padding: 0, marginTop: "8px", fontFamily: "inherit",
           }}>
-            JOIN THE NETWORK <BsArrowRight size={22}/>
+            Join Quote My Job Trade Directory <BsArrowRight size={22}/>
           </button>
         </div>
 

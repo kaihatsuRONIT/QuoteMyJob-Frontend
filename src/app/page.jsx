@@ -1,14 +1,12 @@
 import Footer from "@/components/Footer";
-import Banners from "@/components/Home/Banners";
-import BusinessCTA from "@/components/Home/BusinessCTA";
-import HeroSection from "@/components/Home/HeroSection";
-import HowItWorks from "@/components/Home/HowItWorks";
-import RecentMagazine from "@/components/Home/RecentMagazine";
-import RoleSelector from "@/components/Home/RoleSelector";
+import Banners from "@/components/Landing/Banners";
+import BusinessCTA from "@/components/Landing/BusinessCTA";
+import HeroSection from "@/components/Landing/HeroSection";
+import HowItWorks from "@/components/Landing/HowItWorks";
+import RecentMagazine from "@/components/Landing/RecentMagazine";
+import RoleSelector from "@/components/Landing/RoleSelector";
 import NavBar from "@/components/Navbar";
-import Image from "next/image";
-
-export default function Home() {
+export default function Landing() {
   return (
     <>
     <NavBar/>

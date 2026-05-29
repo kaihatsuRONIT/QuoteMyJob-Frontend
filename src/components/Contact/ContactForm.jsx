@@ -116,8 +116,7 @@ export default function ContactForm() {
                     <h3 style={{ fontFamily: "Manrope", fontSize: "24px", fontWeight: "400", color: "#0f172a", margin: "0 0 20px", lineHeight: "32px", letterSpacing: "0px" }}>Our Locations</h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
                         {[
-                            { name: "UK Headquarters", lines: ["128 City Road", "London, EC1V 2NX", "United Kingdom"] },
-                            { name: "Ireland Office", lines: ["Digital Hub, Thomas Street", "Dublin 8, D08 TCV4", "Ireland"] },
+                            { name: "UK Office", lines: ["Movilla Mews", "Newtownards, Co. Down", "BT23 8WN"] },
                         ].map((loc) => (
                             <div key={loc.name} style={{ display: "flex", gap: "12px" }}>
                                 <MdLocationOn size={18} color="#f97316" style={{ flexShrink: 0, marginTop: "2px" }} />
