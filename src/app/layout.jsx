@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
+import { SocketProvider } from "@/context/SocketContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +26,12 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col">
         <link href="https://fonts.googleapis.com/css2?family=Manrope&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans&display=swap" rel="stylesheet" />
-        {children}</body>
+        <AuthProvider>
+          <SocketProvider>
+            {children}
+          </SocketProvider>
+        </AuthProvider>
+        </body>
     </html>
   );
 }

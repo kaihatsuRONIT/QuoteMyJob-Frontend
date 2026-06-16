@@ -1,63 +1,69 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiChevronDown, FiFileText } from 'react-icons/fi';
 import { MdHandshake } from 'react-icons/md';
 import { FaDollarSign } from 'react-icons/fa';
 import JobCard from './JobCard';
 import { BsArrowDown } from 'react-icons/bs';
 import Link from 'next/link';
+import api from '@/lib/api';
 
 const tabs = ['All Jobs', 'Pending', 'Accepted', 'Completed'];
 
-const stats = [
-  { icon: FiFileText, iconBg: '#F0F3FF', iconColor: '#FF7E00', label: 'Active Quotes', value: '12' },
-  { icon: MdHandshake, iconBg: '#E7EEFF', iconColor: '#55637D', label: 'Response Rate', value: '94%' },
-  { icon: FaDollarSign, iconBg: '#FFF1E6', iconColor: '#D06600', label: 'Pending Volume', value: '£42,850' },
-];
-
-const jobs = [
-  {
-    image: '/kitchen.png',
-    title: 'Full Kitchen Renovation',
-    status: 'PENDING REVIEW',
-    date: 'Oct 12, 2023',
-    location: 'Surrey, GU21',
-    description: 'Complete rip-out of existing units and installation of premium bespoke cabinetry, island, and high-end appliances. Requires gas and electrical...',
-    quote: '£24,500.00'
-  },
-  {
-    image: '/wardrobe.png',
-    title: 'Bespoke Shelving & Storage',
-    status: 'INTERVIEWING',
-    date: 'Jan 14, 2024',
-    location: 'Hampstead, NW3',
-    description: 'Custom-built oak shelving units for a home library. Includes hidden LED lighting and integrated desk space. High precision finishing required...',
-    quote: '£4,200.00'
-  },
-  {
-    image: '/construction.png',
-    title: 'Garden Studio Electrical Installation',
-    status: 'NOT SELECTED',
-    date: 'Sep 28, 2023',
-    location: 'Hampstead, NW3',
-    description: 'Full electrical fit-out for a detached garden studio, including consumer unit installation, internal/external lighting, and high-speed data cabling. All…',
-    quote: '£3,850.00'
-  },
-  {
-    image: '/wires.png',
-    title: 'Full House Rewire',
-    status: 'COMPLETED',
-    date: 'Sep 24, 2023',
-    location: 'Hampstead, NW3',
-    description: 'Complete replacement of electrical systems in a 4-bedroom Victorian terrace.Smart home integration and garden lighting required.',
-    quote: '£8,750.00'
-  }
-];
 
 export default function AppliedJobs() {
   const [activeTab, setActiveTab] = useState('All Jobs');
+  const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const LIMIT = 10;
+  const stats = [
+    { icon: FiFileText, iconBg: '#F0F3FF', iconColor: '#FF7E00', label: 'Active Quotes', value: quotes.filter(q => q.status === 'PENDING').length.toString() },
+    { icon: MdHandshake, iconBg: '#E7EEFF', iconColor: '#55637D', label: 'Response Rate', value: '94%' },
+    { icon: FaDollarSign, iconBg: '#FFF1E6', iconColor: '#D06600', label: 'Pending Volume', value: `£${quotes.filter(q => q.status === 'PENDING').reduce((sum, q) => sum + parseFloat(q.price), 0).toLocaleString('en-GB')}` },
+  ];;
+  useEffect(() => {
+    fetchQuotes(1);
+  }, []);
 
+  const fetchQuotes = async (pageNum = 1) => {
+    try {
+      setLoading(true);
+      const { data } = await api.get(`/quotes/?page=${pageNum}&limit=${LIMIT}`);
+      if (pageNum === 1) {
+        setQuotes(data.quotes);
+      } else {
+        setQuotes((prev) => [...prev, ...data.quotes]);
+      }
+      setHasMore(data.hasMore);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    const next = page + 1;
+    setPage(next);
+    fetchQuotes(next);
+  };
+
+  const filtered = quotes.filter(q => {
+    if (activeTab === 'All Jobs') return true;
+    if (activeTab === 'Pending') return q.status === 'PENDING';
+    if (activeTab === 'Accepted') return q.status === 'ACCEPTED';
+    if (activeTab === 'Completed') return q.job.status === 'COMPLETED';
+    return true;
+  });
   return (
     <>
+      <style>{`
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+`}</style>
       <div style={{ background: '#f8f9fb', padding: '36px 40px', fontFamily: 'Work Sans, sans-serif' }}>
         {/* Header row */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px' }}>
@@ -113,24 +119,61 @@ export default function AppliedJobs() {
       </div>
       {/* Job Cards */}
       <div>
-        {
-          jobs.map((job, index) => {
-            return <div key={index} style={{ padding: '24px', background: '#f8f9fb' }}>
-              <JobCard job={job} />
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+        ) : filtered.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#9ca3af', fontSize: '14px', padding: '40px' }}>No applications found.</p>
+        ) : (
+          filtered.map((quote) => (
+            <div key={quote.id} style={{ padding: '24px', background: '#f8f9fb' }}>
+              <JobCard job={{
+                image: quote.job.media?.[0]?.url || '/kitchen.png',
+                title: quote.job.title,
+                status: quote.status,
+                date: new Date(quote.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+                location: quote.job.address?.split(',')[1]?.trim() || quote.job.address,
+                description: quote.job.description,
+                quote: `£${parseFloat(quote.price).toLocaleString('en-GB', { minimumFractionDigits: 2 })}`,
+                jobId: quote.job.id,
+              }} />
             </div>
-          })
-        }
+          ))
+        )}
       </div>
 
-      <button style={{
-        minWidth: '10vh', padding: '14px', borderRadius: '12px',
-        background: '#f0f2f7', border: 'none', cursor: 'pointer',
-        fontFamily: 'Manrope, sans-serif', fontWeight: 700,
-        fontSize: '14px', color: '#0d1b2a',
-        display: 'flex', alignItems: 'center', gap: '8px',
-      }} className='mx-auto mb-10' >
-        Load More Applications <FiChevronDown />
-      </button>
+      {hasMore && (
+        <button
+          onClick={handleLoadMore}
+          style={{
+            minWidth: '10vh', padding: '14px', borderRadius: '12px',
+            background: '#f0f2f7', border: 'none', cursor: 'pointer',
+            fontFamily: 'Manrope, sans-serif', fontWeight: 700,
+            fontSize: '14px', color: '#0d1b2a',
+            display: 'flex', alignItems: 'center', gap: '8px',
+          }}
+          className='mx-auto mb-10'
+        >
+          Load More Applications <FiChevronDown />
+        </button>
+      )}
     </>
   );
 }
+
+// Skeleton card component
+const SkeletonCard = () => (
+  <div style={{ padding: '24px', background: '#f8f9fb' }}>
+    <div style={{ background: '#fff', borderRadius: '16px', padding: '20px 24px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+      <div style={{ width: '80px', height: '80px', borderRadius: '12px', background: '#e5e7eb', flexShrink: 0, animation: 'pulse 1.5s infinite' }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ width: '60%', height: '16px', borderRadius: '8px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+        <div style={{ width: '40%', height: '12px', borderRadius: '8px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+        <div style={{ width: '80%', height: '12px', borderRadius: '8px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+        <div style={{ width: '80px', height: '24px', borderRadius: '8px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+        <div style={{ width: '60px', height: '32px', borderRadius: '8px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+      </div>
+    </div>
+  </div>
+);

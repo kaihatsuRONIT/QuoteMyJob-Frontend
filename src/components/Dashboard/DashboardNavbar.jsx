@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { FaRegUserCircle } from 'react-icons/fa';
 import { FiSearch } from 'react-icons/fi';
+import NotificationPanel from './NotificationPanel';
 
 export default function DashboardNavbar({ user }) {
     return (
@@ -48,9 +49,9 @@ export default function DashboardNavbar({ user }) {
                         }}
                     />
                 </div>
-
+                <NotificationPanel />
                 {/* Profile icon */}
-                {
+                <Link href="/profile">{
                     user?.avatar ? (
                         <div style={{
                             width: '44px',
@@ -67,7 +68,7 @@ export default function DashboardNavbar({ user }) {
                     ) : (
                         <FaRegUserCircle size={40} style={{ color: '#fff', fontSize: '22px' }} />
                     )
-                }
+                }</Link>
             </div>
         </nav>
     );

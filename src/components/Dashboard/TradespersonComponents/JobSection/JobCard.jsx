@@ -1,15 +1,16 @@
 import { FiCalendar, FiMapPin, FiMessageSquare } from 'react-icons/fi';
+import { useRouter } from 'next/navigation';
 
 const statusStyles = {
-    'PENDING REVIEW': { color: '#D06600', bg: '#FFF1E6' },
-    'INTERVIEWING': { color: '#0061A4', bg: '#E7EEFF' },
-    'NOT SELECTED': { color: '#515F78', bg: '#DFE8FF' },
+    'PENDING': { color: '#D06600', bg: '#FFF1E6' },
+    'ACCEPTED': { color: '#15803D', bg: '#DCFCE7' },
+    'WITHDRAWN': { color: '#515F78', bg: '#DFE8FF' },
     'COMPLETED': { color: '#15803D', bg: '#DCFCE7' },
 };
 
 export default function JobCard({ job }) {
     const status = statusStyles[job.status] || statusStyles['PENDING REVIEW'];
-
+    const router = useRouter();
     return (
         <div style={{
             background: '#fff', borderRadius: '16px 0 0 16px', border: '1px solid #f0f0f0', display: 'flex', gap: '20px', alignItems: 'stretch',
@@ -71,7 +72,10 @@ export default function JobCard({ job }) {
                             padding: '9px 18px', borderRadius: '10px', border: 'none',
                             background: '#0d1b2a', fontFamily: 'Manrope, sans-serif', fontWeight: 700,
                             fontSize: '13px', color: '#fff', cursor: 'pointer',
-                        }}>
+                            
+                        }}
+                        onClick={() => router.push(`/tradesperson/dashboard/jobs/${job.jobId}`)}
+                        >
                             View Details
                         </button>
                     </div>

@@ -9,12 +9,14 @@ import PostedJobs from "@/components/Dashboard/CustomerComponents/PostedJobs";
 import PostJobWizard from "@/components/Dashboard/CustomerComponents/PostJobWizard";
 import DashboardNavbar from "@/components/Dashboard/DashboardNavbar";
 import DashboardSidebar from "@/components/Dashboard/DashboardSidebar";
+import NotificationPanel from "@/components/Dashboard/NotificationPanel";
 import Earnings from "@/components/Dashboard/TradespersonComponents/EarningSection/Earnings";
 import AppliedJobs from "@/components/Dashboard/TradespersonComponents/JobSection/AppliedJobs";
 import FindJobs from "@/components/Dashboard/TradespersonComponents/JobSection/FindJobs";
 import MessagesSidebar from "@/components/Dashboard/TradespersonComponents/MessagesSection/MessageComponent";
 import TradespersonDashboard from "@/components/Dashboard/TradespersonComponents/Overview";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/context/AuthContext";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 const tradeUser = {
@@ -37,14 +39,8 @@ const adminUser = {
 
 export default function DashboardHome() {
     const { userRole, section } = useParams();
-    const [user, setUser] = useState(
-        userRole === "tradesperson" ? tradeUser :
-            userRole === "admin" ? adminUser :
-                customerUser
-    );
+    const {user} = useAuth();
     const [activeLabel, setActiveLabel] = useState(section || "Home");
-    console.log(userRole)
-    console.log(activeLabel)
     return (
         <div style={{ display: 'flex' }}>
             <DashboardSidebar user={user} activeLabel={activeLabel} />
@@ -53,16 +49,17 @@ export default function DashboardHome() {
                 {userRole === "tradesperson" && activeLabel === "overview" && <TradespersonDashboard />}
                 {userRole === "tradesperson" && activeLabel === "applied-jobs" && <AppliedJobs />}
                 {userRole === "tradesperson" && activeLabel === "find-jobs" && <FindJobs />}
-                {userRole === "tradesperson" && activeLabel === "messages" && <MessagesSidebar />}
+                {userRole === "tradesperson" && activeLabel === "chats" && <MessagesSidebar />}
                 {userRole === "tradesperson" && activeLabel === "earnings" && <Earnings />}
                 {userRole === "customer" && activeLabel === "jobs-posted" && <PostedJobs />}
-                {userRole === "customer" && activeLabel === "messages" && <MessageComponent />}
+                {userRole === "customer" && activeLabel === "chats" && <MessageComponent />}
                 {userRole === "customer" && activeLabel === "new-job" && <PostJobWizard />}
                 {userRole === "admin" && activeLabel === "verification" && <AdminVerification/>}
                 {userRole === "admin" && activeLabel === "categories" && <SchemaBuilder/>}
                 {userRole === "admin" && activeLabel === "plans" && <Subscription/>}
                 {userRole === "admin" && activeLabel === "clients" && <DirectoryHeader/>}
                 {userRole === "admin" && activeLabel === "lifecycle" && <LifeCycle/>}
+                {/* {(userRole === "tradesperson" || userRole === "customer") && activeLabel === "notifications" && <NotificationPanel/>} */}
                 <Footer />
             </div>
         </div>

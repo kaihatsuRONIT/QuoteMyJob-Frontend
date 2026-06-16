@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { FaTools, FaDollarSign } from 'react-icons/fa';
 import { MdLocationOn } from 'react-icons/md';
@@ -6,49 +6,34 @@ import { FiSearch } from 'react-icons/fi';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { MdGridView } from 'react-icons/md';
 import LeadCard from './NearbyJobs';
+import api from '@/lib/api';
+import { useJsApiLoader, GoogleMap, Marker } from '@react-google-maps/api';
+import { GrUserWorker } from 'react-icons/gr';
 
+const libraries = ['places'];
 export default function FindJobs({ onApply }) {
     const [trade, setTrade] = useState('All Trades');
     const [miles, setMiles] = useState('Within 40 miles');
     const [budget, setBudget] = useState('Budget: Any');
+    const [jobs, setJobs] = useState([]);
+    const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+        libraries,
+    });
 
     const filters = [
         { icon: FaTools, value: trade, setter: setTrade, options: ['All Trades', 'Plumbing', 'Electrical', 'Carpentry', 'Landscaping'] },
         { icon: MdLocationOn, value: miles, setter: setMiles, options: ['Within 10 miles', 'Within 20 miles', 'Within 40 miles', 'Within 60 miles'] },
         { icon: FaDollarSign, value: budget, setter: setBudget, options: ['Budget: Any', 'Under £500', '£500–£2,000', '£2,000–£10,000', '£10,000+'] },
     ];
-    const jobs = [
-        {
-            isNew: true,
-            title: 'Modern Kitchen Refurbishment',
-            budget: '£4,500 - £6,000',
-            posted: 'Posted 22 mins ago',
-            category: 'Renovation',
-            location: 'Wimbledon (4.2 miles away)',
-            description: 'Complete overhaul of a 20sqm kitchen. Includes cabinetry installation, marble countertop fitting, and integrated lighting. Detailed blueprints available upon...',
-            applicants: ['JP', 'MK'],
-        },
-        {
-            isNew: false,
-            title: 'Emergency Pipe Burst & Ceiling Repair',
-            budget: '£850 - £1,200',
-            posted: 'Posted 3 hours ago',
-            category: 'Plumbing',
-            location: 'Chelsea (1.8 miles away)',
-            description: 'Emergency callout required for a residential property. Main riser leak has caused structural damage to the kitchen ceiling. Materials on site...',
-            verifiedLead: true,
-        },
-        {
-            isNew: false,
-            title: 'Industrial Electrical Panel Upgrade',
-            budget: '£12,000+',
-            posted: 'Posted 5 hours ago',
-            category: 'Electrical',
-            location: 'Greenwich (8.5 miles away)',
-            description: 'Warehouse facility requiring a full 3-phase power distribution upgrade. Must be NICEIC registered. Work must be completed during weekend hours...',
-            highValue: true,
-        },
-    ];
+    useEffect(() => {
+        const fetchNearbyJobs = async () => {
+            const data = await api.get("/jobs/available");
+            setJobs(data.data)
+            console.log(data)
+        }
+        fetchNearbyJobs();
+    }, [])
     return (
         <>
             <div style={{ fontFamily: "Work Sans", padding: "30px" }} className="flex flex-col gap-10">
@@ -101,9 +86,18 @@ export default function FindJobs({ onApply }) {
                                 Apply Filters
                             </button>
                         </div>
-                        <div className='pr-5'>
-                            {jobs.map((job, i) => <LeadCard key={i} job={job} />)}
-                        </div>
+                        {jobs.length > 0 ? (
+                            <div className='w-240'>
+                                {jobs.map((job, i) => <LeadCard key={i} job={job} />)}
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '16px', textAlign: 'center' }}>
+                                <GrUserWorker size={64} color='#9ca3af' />
+                                <h1 style={{ fontSize: '24px', color: '#6b7280', fontFamily: 'Manrope, sans-serif', fontWeight: 700, maxWidth: '320px', margin: 0 }}>
+                                    No related jobs found in your area
+                                </h1>
+                            </div>
+                        )}
                     </div>
                     {/* Right Map and Vertical Bar */}
                     <aside style={{
@@ -127,23 +121,31 @@ export default function FindJobs({ onApply }) {
                                     <MdGridView style={{ color: '#FF7E00', fontSize: '18px' }} />
                                     <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a', lineHeight: "24px" }}>Radius View</span>
                                 </div>
-                                <span style={{ fontSize: '11px', fontWeight: 600, color: '#515F78' }}>42 Active Jobs</span>
+                                <span style={{ fontSize: '11px', fontWeight: 600, color: '#515F78' }}>{jobs.length} Active Jobs</span>
                             </div>
 
                             {/* Map placeholder */}
-                            <div style={{ position: 'relative', height: '256px', background: '#1a2d45', overflow: 'hidden', borderRadius: "7px" }}>
-                                {/* Dark map grid lines */}
-                                <img src='/map.png' alt='map-uk.png' style={{ width: "auto", height: "100%" }} />
-                                {/* Expand Map btn */}
-                                <div style={{
-                                    position: 'absolute', bottom: '40%', left: '50%', transform: 'translateX(-50%)',
-                                    background: 'rgba(255,255,255,0.95)', borderRadius: '999px', padding: '7px 16px',
-                                    display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                                }}>
-                                    <FiSearch style={{ fontSize: '12px', color: '#6b7280' }} />
-                                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#0d1b2a' }}>Expand Map</span>
-                                </div>
+                            <div style={{ position: 'relative', height: '256px', overflow: 'hidden', borderRadius: "7px" }}>
+                                {isLoaded ? (
+                                    <GoogleMap
+                                        mapContainerStyle={{ width: '100%', height: '256px' }}
+                                        center={jobs.length > 0 ? { lat: jobs[0].lat, lng: jobs[0].lng } : { lat: 51.5074, lng: -0.1278 }}
+                                        zoom={11}
+                                        options={{ disableDefaultUI: true, gestureHandling: 'greedy' }}
+                                    >
+                                        {jobs.map(job => (
+                                            <Marker
+                                                key={job.id}
+                                                position={{ lat: job.lat, lng: job.lng }}
+                                                title={job.title}
+                                            />
+                                        ))}
+                                    </GoogleMap>
+                                ) : (
+                                    <div style={{ width: '100%', height: '256px', background: '#1a2d45', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <span style={{ color: '#fff', fontSize: '13px' }}>Loading map...</span>
+                                    </div>
+                                )}
                             </div>
 
                             <p style={{ fontSize: '12px', color: '#6b7280', padding: '5px 16px', margin: 0, lineHeight: "19.5px" }}>

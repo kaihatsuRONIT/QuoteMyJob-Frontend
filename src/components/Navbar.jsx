@@ -1,4 +1,5 @@
 "use client";
+import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -7,11 +8,9 @@ import { FaRegUserCircle } from "react-icons/fa";
 const NavBar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const user = {
-    role: "admin"
-  };
-
-
+  const { user, loading } = useAuth();
+  const role = (user?.user?.role)?.toLowerCase() || (user?.role)?.toLowerCase()
+  console.log(role)
   const links = [
     { tag: "Home", link: "/home" },
     { tag: "About Us", link: "/about-us" },
@@ -21,7 +20,6 @@ const NavBar = () => {
     { tag: "Blog", link: "/blog" },
     { tag: "Contact Us", link: "/contact-us" },
   ];
-
   return (
     <nav
       className="w-full sticky top-0 z-50"
@@ -56,31 +54,28 @@ const NavBar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:block flex-shrink-0">
-            {user ? (
+            {loading ? (
+              <div style={{ width: '140px', height: '46px', borderRadius: '12px', background: 'linear-gradient(90deg, #ffffff20 25%, #ffffff40 50%, #ffffff20 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.2s infinite' }} />
+            ) : user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {
-                  user.role === "customer" ? (
-                    <a href={`${user.role}/dashboard/jobs-posted`}>
-                      <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
-                        Open Orders
-                      </button>
-                    </a>
-                  ) : (
-                    <a href={`${user.role}/dashboard/overview`}>
-                      <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
-                        Open Dashboard
-                      </button>
-                    </a>
-                  )
-                }
-                {
-                  user?.avatar ? (
-                    <img src={user.avatar} alt={user.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} />
-                  ) : (
-
-                    <FaRegUserCircle color="white" size={40} />
-                  )
-                }
+                {role === "customer" ? (
+                  <a href={`${role}/dashboard/jobs-posted`}>
+                    <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
+                      Open Dashboard
+                    </button>
+                  </a>
+                ) : (
+                  <a href={`${role}/dashboard/overview`}>
+                    <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
+                      Open Dashboard
+                    </button>
+                  </a>
+                )}
+                {user?.avatar ? (
+                  <a href="/profile"><img src={user.avatar} alt={user.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} /></a>
+                ) : (
+                  <a href="/profile"><FaRegUserCircle color="white" size={40} /></a>
+                )}
               </div>
             ) : (
               <a href="/login">
@@ -90,6 +85,8 @@ const NavBar = () => {
               </a>
             )}
           </div>
+
+          <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
 
           {/* Mobile Hamburger */}
           <button

@@ -1,8 +1,24 @@
 "use client";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function SignIn() {
     const [showPass, setShowPass] = useState(false);
+    const { login } = useAuth();
+    const router = useRouter();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+
+    const handleLogin = async () => {
+        try {
+            await login(email, password);
+            router.push("/");
+        } catch (e) {
+            setError(e?.response?.data?.message || "Login failed");
+        }
+    };
 
     return (
         <>
@@ -53,7 +69,7 @@ export default function SignIn() {
                                 EMAIL ADDRESS
                             </label>
                             <input
-                                type="email" placeholder="e.g. name@example.com"
+                                type="email" placeholder="e.g. name@example.com" value={email} onChange={(e)=>setEmail(e.target.value)}
                                 style={{
                                     width: "100%", padding: "12px 16px", borderRadius: "8px",
                                     border: "1px solid #e2e8f0", fontSize: "14px", color: "#475569",
@@ -70,7 +86,7 @@ export default function SignIn() {
                                 <a href="#" style={{ fontSize: "13px", color: "#f97316", textDecoration: "none", fontWeight: "500" }}>Forgot password?</a>
                             </div>
                             <input
-                                type={showPass ? "text" : "password"} defaultValue="••••••••"
+                                type={showPass ? "text" : "password"} placeholder="your password" value={password} onChange={(e)=>setPassword(e.target.value)}
                                 style={{
                                     width: "100%", padding: "12px 16px", borderRadius: "8px",
                                     border: "1px solid #e2e8f0", fontSize: "14px", color: "#475569",
@@ -86,7 +102,7 @@ export default function SignIn() {
                             color: "#fff", border: "none", borderRadius: "8px",
                             fontSize: "16px", fontWeight: "600", cursor: "pointer",
                             fontFamily: "Work Sans, sans-serif", marginBottom: "20px",
-                        }}>
+                        }} onClick={handleLogin}>
                             Log-in
                         </button>
 
@@ -102,7 +118,7 @@ export default function SignIn() {
                         ))}
                     </div>
                     <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "12px" }}>
-                        © 2024 QuoteMyJob. Built for Professionals.
+                        © 2026 QuoteMyJob. Built for Professionals.
                     </p>
 
                 </div>

@@ -1,59 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiSearch, FiSend, FiPaperclip, FiSmile, FiPhone, FiInfo } from 'react-icons/fi';
+import { io } from 'socket.io-client';
+import api from '@/lib/api';
+import { getAccessToken } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
-const conversations = [
-  {
-    name: 'Alex Thompson',
-    job: 'Kitchen Renovation',
-    jobId: '#3921',
-    message: "I've attached the quote for the custom cabinetry and layout...",
-    time: '12:45 PM',
-    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&q=80',
-    active: true,
-    online: true,
-    role: 'MASTER PLUMBER',
-  },
-  {
-    name: 'Sarah Miller',
-    job: 'Roof Leak Repair',
-    jobId: '#3890',
-    message: 'The shingles are ordered, should be arriving tomorrow.',
-    time: 'Yesterday',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80',
-    active: false,
-    online: false,
-    role: 'ROOFER',
-  },
-  {
-    name: 'James Wilson',
-    job: 'Rewiring – Bedroom 1',
-    jobId: '#3870',
-    message: 'Great, see you at 8:00 AM on Tuesday then.',
-    time: 'Mon',
-    avatar: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=100&q=80',
-    active: false,
-    online: false,
-    role: 'ELECTRICIAN',
-  },
-];
+let socket = null;
 
-const initialMessages = [
-  { id: 1, from: 'client', text: "Hello! I've had a chance to review the photos of your kitchen pipes. It looks like we'll need to reroute the main drain to accommodate the new sink location.", time: '10:15 AM' },
-  { id: 2, from: 'me', text: "That makes sense. Will that add significant time to the project? I'm hoping to have the flooring guys in by next Thursday.", time: '10:22 AM' },
-  { id: 3, from: 'client', text: "It shouldn't delay us. I've sketched a quick blueprint of the proposed rerouting. Have a look at this:", time: '10:45 AM' },
-  { id: 4, from: 'client', type: 'image', image: 'https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=400&q=80', time: '10:45 AM' },
-  { id: 5, from: 'me', text: "Looks good. Go ahead with that plan. I've just uploaded the photos of the cabinet samples as well.", time: '10:50 AM' },
-  { id: 6, from: 'client', text: "Got them. Those cabinets will look great with the navy hardware. I've attached the final quote for this phase below.", time: '11:02 AM', isNew: true },
-];
-
-function ChatWindow({ convo }) {
-  const [messages, setMessages] = useState(initialMessages);
+function ChatWindow({ convo, currentUserId }) {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const newIndex = messages.findIndex(m => m.isNew);
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    if (!convo) return;
+
+    // connect socket if not connected
+    if (!socket) {
+      socket = io(process.env.NEXT_PUBLIC_API_URL, {
+        auth: { token: getAccessToken() },
+      });
+    }
+
+    // join conversation room
+    socket.emit('joinConversation', convo.id);
+
+    // load initial messages
+    socket.on('messages', (msgs) => {
+      setMessages(msgs);
+    });
+
+    // receive new messages
+    socket.on('newMessage', (msg) => {
+      setMessages(prev => [...prev, msg]);
+    });
+
+    // mark as read
+    socket.emit('markRead', convo.id);
+
+    return () => {
+      socket.off('messages');
+      socket.off('newMessage');
+    };
+  }, [convo]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const send = () => {
-    if (!input.trim()) return;
-    setMessages(prev => [...prev, { id: Date.now(), from: 'me', text: input, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+    if (!input.trim() || !socket) return;
+    socket.emit('sendMessage', {
+      conversationId: convo.id,
+      content: input,
+      type: 'TEXT',
+    });
     setInput('');
   };
 
@@ -65,15 +66,14 @@ function ChatWindow({ convo }) {
       <div style={{ background: '#f0f2f7', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ position: 'relative' }}>
-            <img src={convo.avatar} alt={convo.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', display: 'block', border: '2px solid #FF7E00' }} />
+            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#eef0f8', border: '2px solid #FF7E00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a' }}>
+              {convo?.job?.title?.[0] || '?'}
+            </div>
             <div style={{ position: 'absolute', bottom: 0, right: 0, width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', border: '2px solid #f0f2f7' }} />
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '15px', color: '#0d1b2a' }}>{convo.name}</span>
-              <span style={{ fontSize: '10px', fontWeight: 700, color: '#6366f1', background: 'rgba(99,102,241,0.1)', borderRadius: '6px', padding: '2px 8px' }}>{convo.role}</span>
-            </div>
-            <p style={{ fontSize: '12px', color: '#FF7E00', margin: 0 }}>Project: {convo.job}</p>
+            <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '15px', color: '#0d1b2a' }}>{convo?.job?.title}</span>
+            <p style={{ fontSize: '12px', color: '#FF7E00', margin: 0 }}>Conversation</p>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -84,44 +84,32 @@ function ChatWindow({ convo }) {
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', scrollbarWidth: 'none' }}>
-
-        {/* Date divider */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 600, color: '#9ca3af', background: '#e2e5ee', borderRadius: '999px', padding: '4px 14px' }}>OCTOBER 24, 2023</span>
-        </div>
-
-        {messages.map((msg, i) => (
-          <div key={msg.id}>
-            {/* New messages divider */}
-            {msg.isNew && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '12px 0' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#FF7E00', background: 'rgba(255,126,0,0.08)', borderRadius: '999px', padding: '4px 14px' }}>NEW MESSAGES</span>
-              </div>
-            )}
-            <div style={{ display: 'flex', flexDirection: msg.from === 'me' ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: '8px' }}>
-              {msg.from === 'client' && (
-                <img src={convo.avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        {messages.map((msg) => {
+          const isMe = msg.senderId === currentUserId;
+          return (
+            <div key={msg.id} style={{ display: 'flex', flexDirection: isMe ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: '8px' }}>
+              {!isMe && (
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#eef0f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#0d1b2a', flexShrink: 0 }}>
+                  {msg.sender?.role?.[0]}
+                </div>
               )}
               <div style={{ maxWidth: '60%' }}>
-                {msg.type === 'image' ? (
-                  <div style={{ borderRadius: '12px', overflow: 'hidden' }}>
-                    <img src={msg.image} alt="attachment" style={{ width: '220px', height: '150px', objectFit: 'cover', display: 'block' }} />
-                  </div>
-                ) : (
-                  <div style={{
-                    padding: '12px 16px',
-                    borderRadius: msg.from === 'me' ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
-                    background: msg.from === 'me' ? '#0d1b2a' : '#fff',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                  }}>
-                    <p style={{ fontSize: '14px', color: msg.from === 'me' ? '#fff' : '#374151', margin: 0, lineHeight: 1.6 }}>{msg.text}</p>
-                  </div>
-                )}
-                <p style={{ fontSize: '10px', color: '#9ca3af', margin: '4px 4px 0', textAlign: msg.from === 'me' ? 'right' : 'left' }}>{msg.time}</p>
+                <div style={{
+                  padding: '12px 16px',
+                  borderRadius: isMe ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                  background: isMe ? '#0d1b2a' : '#fff',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                }}>
+                  <p style={{ fontSize: '14px', color: isMe ? '#fff' : '#374151', margin: 0, lineHeight: 1.6 }}>{msg.content}</p>
+                </div>
+                <p style={{ fontSize: '10px', color: '#9ca3af', margin: '4px 4px 0', textAlign: isMe ? 'right' : 'left' }}>
+                  {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+        <div ref={bottomRef} />
       </div>
 
       {/* Input */}
@@ -151,7 +139,16 @@ function ChatWindow({ convo }) {
 }
 
 export default function MessageComponent({ onSelect }) {
-  const [selected, setSelected] = useState(conversations[0]);
+  const { user } = useAuth();
+  const [conversations, setConversations] = useState([]);
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    api.get('/chat/conversations').then(({ data }) => {
+      setConversations(data);
+      setSelected(data[0] || null);
+    });
+  }, []);
 
   return (
     <div style={{ display: 'flex', flex: 1, fontFamily: 'Work Sans, sans-serif' }}>
@@ -169,24 +166,27 @@ export default function MessageComponent({ onSelect }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {conversations.map((c) => {
-            const isActive = selected?.name === c.name;
+            const isActive = selected?.id === c.id;
+            const lastMsg = c.messages?.[0];
             return (
-              <div key={c.name} onClick={() => { setSelected(c); onSelect?.(c); }}
+              <div key={c.id} onClick={() => { setSelected(c); onSelect?.(c); }}
                 style={{ display: 'flex', gap: '12px', padding: '12px 10px', borderRadius: '14px', background: isActive ? '#fff' : 'transparent', borderLeft: isActive ? '3px solid #FF7E00' : '3px solid transparent', cursor: 'pointer', transition: 'background 0.15s', boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.06)' : 'none' }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
               >
-                <div style={{ position: 'relative', flexShrink: 0 }}>
-                  <img src={c.avatar} alt={c.name} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
-                  {c.online && <div style={{ position: 'absolute', bottom: '1px', right: '1px', width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', border: '2px solid #f8f9fb' }} />}
+                <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#eef0f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a', flexShrink: 0 }}>
+                  {c.job?.title?.[0] || '?'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                    <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0d1b2a' }}>{c.name}</span>
-                    <span style={{ fontSize: '10px', color: '#9ca3af', flexShrink: 0 }}>{c.time}</span>
+                    <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0d1b2a' }}>{c.job?.title}</span>
+                    <span style={{ fontSize: '10px', color: '#9ca3af', flexShrink: 0 }}>
+                      {lastMsg ? new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                    </span>
                   </div>
-                  <p style={{ fontSize: '11px', fontWeight: 600, color: '#FF7E00', margin: '0 0 3px' }}>{c.job}</p>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.message}</p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {lastMsg?.content || 'No messages yet'}
+                  </p>
                 </div>
               </div>
             );
@@ -195,7 +195,7 @@ export default function MessageComponent({ onSelect }) {
       </div>
 
       {/* Chat window */}
-      {selected && <ChatWindow convo={selected} />}
+      {selected && <ChatWindow convo={selected} currentUserId={user?.userId} />}
     </div>
   );
 }

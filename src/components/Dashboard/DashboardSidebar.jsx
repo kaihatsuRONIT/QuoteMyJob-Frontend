@@ -14,14 +14,14 @@ const tradeNav = [
     { icon: MdDashboard, label: 'Dashboard', sectionLabel: "overview", href: '/overview' },
     { icon: FaBriefcase, label: 'Applied Jobs', sectionLabel: "applied-jobs", href: '/applied-jobs' },
     { icon: FaSearch, label: 'Find Jobs', sectionLabel: "find-jobs", href: '/find-jobs' },
-    { icon: MdMessage, label: 'Messages', sectionLabel: "messages", href: '/messages' },
+    { icon: MdMessage, label: 'Messages', sectionLabel: "chats", href: '/chats' },
     { icon: FaDollarSign, label: 'Earnings', sectionLabel: "earnings", href: '/earnings' },
 ];
 
 const customerNav = [
     { icon: FaHome, label: 'Home', sectionLabel: "Home", href: '/' },
     { icon: FaShoppingBag, label: 'Jobs Posted', sectionLabel: "jobs-posted", href: '/jobs-posted' },
-    { icon: MdMessage, label: 'Messages', sectionLabel: "messages", href: '/messages' },
+    { icon: MdMessage, label: 'Messages', sectionLabel: "chats", href: '/chats' },
 ];
 
 const adminNav = [
@@ -33,7 +33,8 @@ const adminNav = [
 ];
 
 export default function DashboardSidebar({ user, activeLabel = "Home" }) {
-    const nav = user?.role === 'customer' ? customerNav : user?.role === 'admin' ? adminNav : tradeNav;
+    const nav = user?.user?.role === 'CUSTOMER' ? customerNav : user?.role === 'ADMIN' ? adminNav : tradeNav;
+    const role = (user?.user?.role || user?.role).toLowerCase()
     return (
         <aside style={{
             width: '200px',
@@ -70,10 +71,10 @@ export default function DashboardSidebar({ user, activeLabel = "Home" }) {
                 </div>
                 <div style={{ textAlign: 'center' }}>
                     <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', color: '#fff', margin: 0 }}>
-                        Pro Workspace
+                        {user?.name}
                     </p>
                     <p style={{ fontSize: '10px', fontWeight: 600, color: '#6b7280', letterSpacing: '0.1em', margin: '2px 0 0', textTransform: 'uppercase' }}>
-                        The Digital Foreman
+                        {role}
                     </p>
                 </div>
             </div>
@@ -83,7 +84,7 @@ export default function DashboardSidebar({ user, activeLabel = "Home" }) {
                 {nav.map(({ icon: Icon, label, sectionLabel, href }) => {
                     const active = sectionLabel === activeLabel;
                     return (
-                        <Link key={label} href={label === 'Home' ? '/' : `/${user?.role}/dashboard${href}`} style={{ textDecoration: 'none' }}>
+                        <Link key={label} href={label === 'Home' ? '/' : `/${role}/dashboard${href}`} style={{ textDecoration: 'none' }}>
                             <div style={{
                                 display: 'flex', alignItems: 'center', gap: '10px',
                                 padding: '10px 14px', borderRadius: '10px', cursor: 'pointer',
