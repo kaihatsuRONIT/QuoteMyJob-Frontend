@@ -1,4 +1,5 @@
 import api from '@/lib/api';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { FiCalendar, FiClock, FiFileText } from 'react-icons/fi';
@@ -12,6 +13,7 @@ export default function QuotationInbox({ jobId, token }) {
     const [loading, setLoading] = useState(true);
     const [accepting, setAccepting] = useState(null);
     const [selectedQuote, setSelectedQuote] = useState(null);
+    const router = useRouter()
 
     useEffect(() => {
         console.log('jobId:', jobId);
@@ -174,40 +176,41 @@ export default function QuotationInbox({ jobId, token }) {
                                                 <p style={{ fontSize: '10px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.08em', margin: '0 0 2px' }}>QUOTE TOTAL</p>
                                                 <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '22px', color: '#0d1b2a', margin: 0 }}>{currency}{Number(q.price).toLocaleString()}</p>
                                             </div>
-                                            {q.status === 'PENDING' && job.status === 'CLOSED' && (
-                                                <div style={{ display: 'flex', gap: '8px' }}>
-                                                    <button
-                                                        onClick={() => handleAccept(q.id)}
-                                                        disabled={accepting === q.id}
-                                                        style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: '#22c55e', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: 'pointer', opacity: accepting === q.id ? 0.7 : 1 }}
-                                                    >
-                                                        {accepting === q.id ? 'Accepting...' : 'Accept'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleReject(q.id)}
-                                                        style={{ padding: '8px 18px', borderRadius: '8px', border: '1px solid #FF7E00', background: '#fff', color: '#FF7E00', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {q.status === 'ACCEPTED' && (
-                                                <span style={{ fontSize: '12px', fontWeight: 700, color: '#22c55e' }}>✓ Accepted</span>
-                                            )}
-                                            {q.status === 'REJECTED' && (
-                                                <span style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444' }}>✗ Rejected</span>
-                                            )}
                                         </div>
                                     </div>
                                     {/* Tradesperson Note */}
                                     <button
                                         onClick={() => setSelectedQuote(q)}
-                                        style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#fff', fontFamily: 'Work Sans, sans-serif', fontWeight: 500, fontSize: '12px', color: '#374151', cursor: 'pointer', marginBottom:"15px" }}
+                                        style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#fff', fontFamily: 'Work Sans, sans-serif', fontWeight: 500, fontSize: '12px', color: '#374151', cursor: 'pointer', marginBottom: "15px" }}
                                     >
                                         Tradesperson Note
                                     </button>
+                                    {/* Accept/Reject */}
+                                    {q.status === 'PENDING' && (job.status === 'OPEN' || job.status === 'CLOSED') && (
+                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
+                                            <button
+                                                onClick={() => handleAccept(q.id)}
+                                                disabled={accepting === q.id}
+                                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: '#22c55e', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: 'pointer', opacity: accepting === q.id ? 0.7 : 1 }}
+                                            >
+                                                {accepting === q.id ? 'Accepting...' : 'Accept'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleReject(q.id)}
+                                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #FF7E00', background: '#fff', color: '#FF7E00', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+                                            >
+                                                Reject
+                                            </button>
+                                        </div>
+                                    )}
+                                    {q.status === 'ACCEPTED' && (
+                                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#22c55e', display: 'block', marginBottom: '15px' }}>✓ Accepted</span>
+                                    )}
+                                    {q.status === 'REJECTED' && (
+                                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444', display: 'block', marginBottom: '15px' }}>✗ Rejected</span>
+                                    )}
                                     {/* Message Pro */}
-                                    <button style={{ width: '100%', padding: '12px', border: '1px solid #C5C6CD', background: '#F2F6FE', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0B1A30', cursor: 'pointer', lineHeight: '20px' }}>
+                                    <button onClick={()=> router.push("/customer/dashboard/chats")} style={{ width: '100%', padding: '12px', border: '1px solid #C5C6CD', background: '#F2F6FE', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', color: '#0B1A30', cursor: 'pointer', lineHeight: '20px' }}>
                                         Message Pro
                                     </button>
                                 </div>
@@ -286,24 +289,6 @@ export default function QuotationInbox({ jobId, token }) {
                                 </p>
                             </div>
                         </div>
-
-                        {/* Actions */}
-                        {selectedQuote.status === 'PENDING' && (job.status === 'CLOSED' || job.status === 'OPEN') && (
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
-                                <button
-                                    onClick={() => { handleAccept(selectedQuote.id); setSelectedQuote(null); }}
-                                    style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', background: '#22c55e', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
-                                >
-                                    Accept Quote
-                                </button>
-                                <button
-                                    onClick={() => { handleReject(selectedQuote.id); setSelectedQuote(null); }}
-                                    style={{ flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #FF7E00', background: '#fff', color: '#FF7E00', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
-                                >
-                                    Reject
-                                </button>
-                            </div>
-                        )}
                     </div>
                 </div>
             )}

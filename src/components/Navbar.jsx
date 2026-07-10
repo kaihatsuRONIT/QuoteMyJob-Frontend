@@ -1,7 +1,7 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaRegUserCircle } from "react-icons/fa";
 
@@ -10,7 +10,6 @@ const NavBar = () => {
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const role = (user?.user?.role)?.toLowerCase() || (user?.role)?.toLowerCase()
-  console.log(role)
   const links = [
     { tag: "Home", link: "/home" },
     { tag: "About Us", link: "/about-us" },
@@ -29,7 +28,7 @@ const NavBar = () => {
         <div className="flex items-center justify-between h-25 pr-15">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href={"/"}>
+            <Link href={"/home"}>
               <img
                 className="h-20 w-auto object-cover pl-10"
                 src="/websiteLogo.png"
@@ -41,14 +40,14 @@ const NavBar = () => {
           {/* Desktop Nav Links */}
           <div className="hidden lg:flex items-center gap-8 xl:gap-10">
             {links.map((link, index) => (
-              <a
+              <Link
                 key={index}
                 href={`${link.link}`}
                 className={`font-[var(--font-work-sans)] text-md font-bold tracking-wide transition-colors duration-200 whitespace-nowrap ${pathname === link.link ? "text-orange-400" : "text-white hover:text-orange-400"
                   }`}
               >
                 {link.tag}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -59,30 +58,30 @@ const NavBar = () => {
             ) : user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {role === "customer" ? (
-                  <a href={`${role}/dashboard/jobs-posted`}>
+                  <Link href={`${role}/dashboard/jobs-posted`}>
                     <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
                       Open Dashboard
                     </button>
-                  </a>
+                  </Link>
                 ) : (
-                  <a href={`${role}/dashboard/overview`}>
+                  <Link href={`${role}/dashboard/overview`}>
                     <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
                       Open Dashboard
                     </button>
-                  </a>
+                  </Link>
                 )}
                 {user?.avatar ? (
-                  <a href="/profile"><img src={user.avatar} alt={user.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} /></a>
+                  <Link href="/profile"><img src={user.avatar} alt={user.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} /></Link>
                 ) : (
-                  <a href="/profile"><FaRegUserCircle color="white" size={40} /></a>
+                  <Link href="/profile"><FaRegUserCircle color="white" size={40} /></Link>
                 )}
               </div>
             ) : (
-              <a href="/login">
+              <Link href="/login">
                 <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
                   Login / Signup
                 </button>
-              </a>
+              </Link>
             )}
           </div>
 

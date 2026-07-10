@@ -1,5 +1,6 @@
 import { FiTrendingUp, FiChevronRight } from 'react-icons/fi';
 import TransactionHistory from './TransactionHistory';
+import { useState } from 'react';
 export default function Earnings() {
     const stats = [
         {
@@ -8,7 +9,7 @@ export default function Earnings() {
             decimal: '.00',
             badge: { text: '↑12.5%', sub: 'from last month', color: '#22c55e' },
             icon: <FiTrendingUp style={{ fontSize: '20px', color: '#c7d0e8' }} />,
-             background:'#F0F3FF'
+            background: '#F0F3FF'
         },
         {
             label: 'PENDING PAYOUTS',
@@ -16,17 +17,23 @@ export default function Earnings() {
             decimal: '.50',
             labelColor: '#FF7E00',
             link: 'VIEW DETAILS',
-             background:'#FFFFF'
-           
+            background: '#FFFFF'
+
         },
         {
             label: 'ACTIVE QUOTES VALUE',
             value: '$28,100',
             decimal: '.00',
             progress: { value: 60, sub: '6 active projects in negotiation' },
-             background:'#F0F3FF'
+            background: '#F0F3FF'
         },
     ];
+    const [loading, setLoading] = useState(true);
+    if (loading) {
+        return <>
+            <h1>COMING SOON</h1>
+        </>
+    }
     return (
         <>
             {/* Top heading */}
@@ -38,11 +45,11 @@ export default function Earnings() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', fontFamily: 'Work Sans, sans-serif' }}>
                     {stats.map(({ label, value, decimal, badge, icon, labelColor, link, progress, background }) => (
-                        <div key={label} style={{ background: background , borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div key={label} style={{ background: background, borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
                             {/* Label row */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <span style={{ fontSize: '14px', fontWeight: 600, color: labelColor || '#6b7280', letterSpacing: '1.4px', lineHeight:"20px" }}>{label}</span>
+                                <span style={{ fontSize: '14px', fontWeight: 600, color: labelColor || '#6b7280', letterSpacing: '1.4px', lineHeight: "20px" }}>{label}</span>
                                 {icon}
                             </div>
 
@@ -54,14 +61,14 @@ export default function Earnings() {
                             {/* Badge */}
                             {badge && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', }}>
-                                    <span style={{ fontSize: '13px', fontWeight: 700, color: badge.color, backgroundColor:"#ECFDF5", borderRadius:"10px" }}>{badge.text}</span>
+                                    <span style={{ fontSize: '13px', fontWeight: 700, color: badge.color, backgroundColor: "#ECFDF5", borderRadius: "10px" }}>{badge.text}</span>
                                     <span style={{ fontSize: '12px', color: '#9ca3af' }}>{badge.sub}</span>
                                 </div>
                             )}
 
                             {/* Link */}
                             {link && (
-                                <a href="#" style={{ fontSize: '12px', fontWeight: 700, color: '#0d1b2a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '2px', letterSpacing: '0.05em', paddingTop:"10px" }}>
+                                <a href="#" style={{ fontSize: '12px', fontWeight: 700, color: '#0d1b2a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '2px', letterSpacing: '0.05em', paddingTop: "10px" }}>
                                     {link} <FiChevronRight style={{ fontSize: '13px' }} />
                                 </a>
                             )}
@@ -78,7 +85,7 @@ export default function Earnings() {
                         </div>
                     ))}
                 </div>
-                <TransactionHistory/>
+                <TransactionHistory />
             </div>
         </>
     );

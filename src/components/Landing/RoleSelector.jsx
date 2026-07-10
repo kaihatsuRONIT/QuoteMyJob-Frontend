@@ -1,4 +1,6 @@
 "use client";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaHome } from "react-icons/fa";
 import { FaArrowTrendUp } from "react-icons/fa6";
@@ -35,6 +37,8 @@ const TrendIcon = () => (
 
 export default function RoleSelector() {
   const [hoveredCard, setHoveredCard] = useState(null);
+  const router = useRouter();
+  const {user} = useAuth();
 
   return (
     <div style={{
@@ -131,6 +135,14 @@ export default function RoleSelector() {
               width: "fit-content",
               fontFamily: "inherit",
             }}
+            onClick={()=>{
+              if(!user || user?.user?.role === "TRADESPERSON"){
+                router.push("/login")
+              }
+              else{
+                router.push(`/customer/dashboard/new-job`);
+              }
+            }}
           >
             Post my Job
             <ArrowIcon />
@@ -204,6 +216,14 @@ export default function RoleSelector() {
               width: "fit-content",
               fontFamily: "inherit",
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            }}
+            onClick={()=>{
+              if(!user || user?.user?.role === "CUSTOMER"){
+                router.push("/login")
+              }
+              else{
+                router.push(`/tradesperson/dashboard/overview`);
+              }
             }}
           >
             Join Quote My Job Trade Directory

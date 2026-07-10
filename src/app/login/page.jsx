@@ -10,13 +10,17 @@ export default function SignIn() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = async () => {
         try {
+            setIsLoading(true);
             await login(email, password);
             router.push("/");
         } catch (e) {
             setError(e?.response?.data?.message || "Login failed");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -69,7 +73,7 @@ export default function SignIn() {
                                 EMAIL ADDRESS
                             </label>
                             <input
-                                type="email" placeholder="e.g. name@example.com" value={email} onChange={(e)=>setEmail(e.target.value)}
+                                type="email" placeholder="e.g. name@example.com" value={email} onChange={(e) => setEmail(e.target.value)}
                                 style={{
                                     width: "100%", padding: "12px 16px", borderRadius: "8px",
                                     border: "1px solid #e2e8f0", fontSize: "14px", color: "#475569",
@@ -86,7 +90,7 @@ export default function SignIn() {
                                 <a href="#" style={{ fontSize: "13px", color: "#f97316", textDecoration: "none", fontWeight: "500" }}>Forgot password?</a>
                             </div>
                             <input
-                                type={showPass ? "text" : "password"} placeholder="your password" value={password} onChange={(e)=>setPassword(e.target.value)}
+                                type={showPass ? "text" : "password"} placeholder="your password" value={password} onChange={(e) => setPassword(e.target.value)}
                                 style={{
                                     width: "100%", padding: "12px 16px", borderRadius: "8px",
                                     border: "1px solid #e2e8f0", fontSize: "14px", color: "#475569",
@@ -98,12 +102,15 @@ export default function SignIn() {
 
                         {/* Submit */}
                         <button style={{
-                            width: "100%", padding: "14px", background: "#f97316",
+                            width: "100%", padding: "14px",
                             color: "#fff", border: "none", borderRadius: "8px",
                             fontSize: "16px", fontWeight: "600", cursor: "pointer",
                             fontFamily: "Work Sans, sans-serif", marginBottom: "20px",
-                        }} onClick={handleLogin}>
-                            Log-in
+                            background: isLoading ? "#fdba74" : "#f97316",
+                            cursor: isLoading ? "not-allowed" : "pointer",
+                            opacity: isLoading ? 0.7 : 1,
+                        }} onClick={handleLogin} disabled={isLoading}>
+                            {isLoading ? "Logging..." : "Login"}
                         </button>
 
                         <p style={{ textAlign: "center", fontSize: "14px", color: "#64748b", margin: 0 }}>

@@ -12,6 +12,7 @@ import { HiOutlineDocumentReport } from 'react-icons/hi';
 const tradeNav = [
     { icon: FaHome, label: 'Home', sectionLabel: "Home", href: '/' },
     { icon: MdDashboard, label: 'Dashboard', sectionLabel: "overview", href: '/overview' },
+    { icon: MdDashboard, label: 'Subscription', sectionLabel: "subscription", href: '/subscription' },
     { icon: FaBriefcase, label: 'Applied Jobs', sectionLabel: "applied-jobs", href: '/applied-jobs' },
     { icon: FaSearch, label: 'Find Jobs', sectionLabel: "find-jobs", href: '/find-jobs' },
     { icon: MdMessage, label: 'Messages', sectionLabel: "chats", href: '/chats' },
@@ -21,14 +22,16 @@ const tradeNav = [
 const customerNav = [
     { icon: FaHome, label: 'Home', sectionLabel: "Home", href: '/' },
     { icon: FaShoppingBag, label: 'Jobs Posted', sectionLabel: "jobs-posted", href: '/jobs-posted' },
+    { icon: FaShoppingBag, label: 'Completed Jobs', sectionLabel: "jobs-completed", href: '/jobs-completed' },
     { icon: MdMessage, label: 'Messages', sectionLabel: "chats", href: '/chats' },
 ];
 
 const adminNav = [
+    { icon: MdVerified, label: 'Payments', sectionLabel: 'payments', href: '/payments' },
     { icon: MdVerified, label: 'Verification', sectionLabel: 'verification', href: '/verification' },
     { icon: MdGridView, label: 'Categories', sectionLabel: 'categories', href: '/categories' },
     { icon: RiPriceTag3Line, label: 'Plans', sectionLabel: 'plans', href: '/plans' },
-    { icon: FiUsers, label: 'Client Nodes', sectionLabel: 'clients', href: '/clients' },
+    { icon: FiUsers, label: 'Clients', sectionLabel: 'clients', href: '/clients' },
     { icon: TbRefreshDot, label: 'Life Cycle', sectionLabel: 'lifecycle', href: '/lifecycle' },
 ];
 

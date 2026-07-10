@@ -41,25 +41,10 @@ export default function LeadCard({ job }) {
           <FiMapPin style={{ fontSize: '11px' }} /> {location}
         </span>
       </div>
-
-      <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px', lineHeight: 1.6 }}>{job.description}</p>
-
-      <div style={{ borderTop: '1px solid #f0f0f0', marginBottom: '14px' }} />
-
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          {Array.from({ length: job._count?.quotes || 0 }).map((_, i) => (
-            <div key={i} style={{
-              width: '30px', height: '30px', borderRadius: '50%', background: '#e5e7eb',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '10px', fontWeight: 700, color: '#374151',
-            }}>
-              {i + 1}
-            </div>
-          ))}
-        </div>
-
-        <button onClick={() => router.push(`/tradesperson/dashboard/jobs/${job.id}`)}  style={{
+        <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px', lineHeight: 1.6 }}>{job.description}</p>
+        <button onClick={() => router.push(`/tradesperson/dashboard/jobs/${job.id}`)} style={{
+          margin: '0 0 16px',
           display: 'flex', alignItems: 'center', gap: '8px',
           padding: '11px 22px', borderRadius: '10px', border: 'none',
           background: '#FF7E00', color: '#fff', cursor: 'pointer',
@@ -68,6 +53,7 @@ export default function LeadCard({ job }) {
           View Job <FiArrowRight />
         </button>
       </div>
+      <div style={{ borderTop: '1px solid #f0f0f0', marginBottom: '14px' }} />
     </div>
   );
 }

@@ -1,9 +1,12 @@
+"use client";
 import NotificationPanel from "@/components/Dashboard/NotificationPanel";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useParams } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 
 export default function DashboardLayout({ children }) {
-  return <ProtectedRoute>{children}<Toaster
+  const { userRole } = useParams();
+  return <ProtectedRoute requiredRole={userRole}>{children}<Toaster
     position="bottom-right"
     toastOptions={{
       style: {

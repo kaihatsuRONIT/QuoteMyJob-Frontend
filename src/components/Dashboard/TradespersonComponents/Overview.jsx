@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FaStar, FaMapMarkerAlt, FaArrowUp } from 'react-icons/fa';
 import { MdElectricBolt } from 'react-icons/md';
 import { PiPaintBrushBroadDuotone } from 'react-icons/pi';
@@ -46,14 +46,20 @@ const activeJobs = [
 ];
 
 export default function Overview({ user }) {
-    useEffect(()=>{
-        console.log("tradesperson dashboard mounted")
-    },[])
+  useEffect(() => {
+    console.log("tradesperson dashboard mounted")
+  }, [])
+  const [loading, setLoading] = useState(true);
+  if (loading) {
+    return <>
+      <h1>COMING SOON</h1>
+    </>
+  }
   return (
     <div style={{ background: '#f8f9fb', minHeight: '100vh', padding: '36px 40px', fontFamily: 'Work Sans, sans-serif' }}>
 
       {/* Header */}
-      <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '48px', color: '#0d1b2a', margin: '0 0 8px', lineHeight:"48px",letterSpacing:"-1.2px" }}>
+      <h1 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '48px', color: '#0d1b2a', margin: '0 0 8px', lineHeight: "48px", letterSpacing: "-1.2px" }}>
         Welcome Back, <span style={{ color: '#FF7E00' }}>{user?.name || 'Alex'}.</span>
       </h1>
       <p style={{ fontSize: '18px', color: '#6b7280', margin: '0 0 32px', maxWidth: '480px', lineHeight: "28px" }}>
@@ -115,7 +121,7 @@ export default function Overview({ user }) {
           <div style={{ background: '#fff', borderRadius: '16px', padding: '20px', border: '1px solid #f0f0f0' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '4px' }}>
               <div>
-                <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '24px', color: '#0d1b2a', margin: '0 0 4px', lineHeight:"32px" }}>New Leads Nearby</h3>
+                <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '24px', color: '#0d1b2a', margin: '0 0 4px', lineHeight: "32px" }}>New Leads Nearby</h3>
                 <p style={{ fontSize: '12px', color: '#515F78', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <FaMapMarkerAlt style={{ fontSize: '11px' }} /> Within your 40-mile radius (Guildford, UK)
                 </p>
@@ -130,11 +136,11 @@ export default function Overview({ user }) {
                     <span style={{ fontSize: '10px', fontWeight: 700, color: lead.categoryColor, background: 'rgba(255,126,0,0.08)', borderRadius: '6px', padding: '3px 8px', letterSpacing: '0.05em' }}>
                       {lead.category}
                     </span>
-                    <span style={{fontWeight:"400", fontSize: '12px', color: '#515F78',lineHeight:"16px" }}>{lead.time}</span>
+                    <span style={{ fontWeight: "400", fontSize: '12px', color: '#515F78', lineHeight: "16px" }}>{lead.time}</span>
                   </div>
-                  <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0D1C32', margin: '0 0 6px', lineHeight:"24px" }}>{lead.title}</p>
+                  <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0D1C32', margin: '0 0 6px', lineHeight: "24px" }}>{lead.title}</p>
                   <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 10px', lineHeight: 1.5 }}>{lead.desc}</p>
-                  <p style={{ fontSize: '12px',fontWeight:"500", color: '#0D1C32', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px', lineHeight:"16px" }}>
+                  <p style={{ fontSize: '12px', fontWeight: "500", color: '#0D1C32', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: '4px', lineHeight: "16px" }}>
                     <FaMapMarkerAlt style={{ fontSize: '11px' }} /> {lead.location}
                   </p>
                   <button style={{
@@ -159,7 +165,7 @@ export default function Overview({ user }) {
                     <job.icon style={{ fontSize: '18px', color: '#6b7280' }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a', margin: '0 0 3px', lineHeight:"24px" }}>{job.title}</p>
+                    <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a', margin: '0 0 3px', lineHeight: "24px" }}>{job.title}</p>
                     <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Client: {job.client} • {job.due}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>

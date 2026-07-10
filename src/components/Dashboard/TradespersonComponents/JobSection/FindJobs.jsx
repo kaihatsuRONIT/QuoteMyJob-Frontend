@@ -16,6 +16,7 @@ export default function FindJobs({ onApply }) {
     const [miles, setMiles] = useState('Within 40 miles');
     const [budget, setBudget] = useState('Budget: Any');
     const [jobs, setJobs] = useState([]);
+    const[loading,setLoading] = useState(true)
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
         libraries,
@@ -30,9 +31,10 @@ export default function FindJobs({ onApply }) {
         const fetchNearbyJobs = async () => {
             const data = await api.get("/jobs/available");
             setJobs(data.data)
-            console.log(data)
+            setLoading(false);
         }
         fetchNearbyJobs();
+        
     }, [])
     return (
         <>
@@ -86,7 +88,15 @@ export default function FindJobs({ onApply }) {
                                 Apply Filters
                             </button>
                         </div>
-                        {jobs.length > 0 ? (
+                        {loading ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '16px', textAlign: 'center' }}>
+                                <div style={{ width: '36px', height: '36px', border: '3px solid #f0f0f0', borderTop: '3px solid #FF7E00', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                                <h1 style={{ fontSize: '18px', color: '#6b7280', fontFamily: 'Manrope, sans-serif', fontWeight: 700, margin: 0 }}>
+                                    Getting nearby jobs...
+                                </h1>
+                                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                            </div>
+                        ) : jobs.length > 0 ? (
                             <div className='w-240'>
                                 {jobs.map((job, i) => <LeadCard key={i} job={job} />)}
                             </div>

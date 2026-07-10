@@ -6,6 +6,7 @@ import JobCard from './JobCard';
 import { BsArrowDown } from 'react-icons/bs';
 import Link from 'next/link';
 import api from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 const tabs = ['All Jobs', 'Pending', 'Accepted', 'Completed'];
 
@@ -17,6 +18,7 @@ export default function AppliedJobs() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const LIMIT = 10;
+  const { user } = useAuth();
   const stats = [
     { icon: FiFileText, iconBg: '#F0F3FF', iconColor: '#FF7E00', label: 'Active Quotes', value: quotes.filter(q => q.status === 'PENDING').length.toString() },
     { icon: MdHandshake, iconBg: '#E7EEFF', iconColor: '#55637D', label: 'Response Rate', value: '94%' },
@@ -48,6 +50,11 @@ export default function AppliedJobs() {
     setPage(next);
     fetchQuotes(next);
   };
+
+  useEffect(() => {
+    if (!user) return;
+    api.get('/quotes').then(({ data }) => setQuotes(data.quotes || data)).finally(() => setLoading(false));
+  }, [user?.id]); // or whatever uniquely identifies the logged-in tradesperson
 
   const filtered = quotes.filter(q => {
     if (activeTab === 'All Jobs') return true;
@@ -129,12 +136,14 @@ export default function AppliedJobs() {
               <JobCard job={{
                 image: quote.job.media?.[0]?.url || '/kitchen.png',
                 title: quote.job.title,
-                status: quote.status,
+                status: quote.job.status,
+                quoteStatus: quote.status,
                 date: new Date(quote.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
                 location: quote.job.address?.split(',')[1]?.trim() || quote.job.address,
                 description: quote.job.description,
                 quote: `£${parseFloat(quote.price).toLocaleString('en-GB', { minimumFractionDigits: 2 })}`,
                 jobId: quote.job.id,
+                tradespersonMarkedComplete: quote.job.tradespersonMarkedComplete,
               }} />
             </div>
           ))

@@ -7,9 +7,9 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import EditJobModal from './EditJobModal';
 import { useRouter } from 'next/navigation';
+import CompletedJobs from './CompletedJobs';
 
 export default function PostedJobs({ onTabChange }) {
-    const [activeTab, setActiveTab] = useState('Active Jobs');
     const [jobs, setJobs] = useState([]);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [targetJobId, setTargetJobId] = useState(null);
@@ -19,6 +19,7 @@ export default function PostedJobs({ onTabChange }) {
     const [categories, setCategories] = useState([])
     const [reopenDialog, setReopenDialog] = useState(null);
     const [reopening, setReopening] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const handleReopen = async () => {
         try {
@@ -34,10 +35,6 @@ export default function PostedJobs({ onTabChange }) {
         }
     };
 
-    const handleTab = (tab) => {
-        setActiveTab(tab);
-        onTabChange?.(tab);
-    };
     const handleDeleteClick = (jobId) => {
         setTargetJobId(jobId);
         setConfirmOpen(true);
@@ -56,11 +53,19 @@ export default function PostedJobs({ onTabChange }) {
             setIsDeleting(false);
         }
     };
+    const handlePay = async (jobId) => {
+        try {
+            const { data } = await api.post(`/jobs/${jobId}/pay`);
+            window.location.href = data.url;
+        } catch (e) {
+            toast.error(e?.response?.data?.message || 'Failed to start payment');
+        }
+    };
     useEffect(() => {
         const fetchJobs = async () => {
             const { data } = await api.get("/jobs/my");
             setJobs(data)
-            console.log(data)
+            setLoading(false);
         }
         const fetchCategories = async () => {
             await api.get('/categories').then(({ data }) => setCategories(data));
@@ -90,8 +95,8 @@ export default function PostedJobs({ onTabChange }) {
             )}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <div>
-                    <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '28px', color: '#0d1b2a', margin: '0 0 6px' }}>My Posted Jobs</h2>
-                    <p style={{ fontSize: '14px', color: '#9ca3af', margin: 0 }}>History of your completed home improvement projects.</p>
+                    <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '48px', color: '#0d1b2a', margin: '0 0 6px' }}>Posted <span style={{ color: "#f97316" }}>Jobs</span></h2>
+                    <p style={{ fontSize: '15px', color: '#9ca3af', margin: 0 }}>History of your completed home improvement projects.</p>
                 </div>
                 <a href='new-job'
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '13px 22px', borderRadius: '12px', border: 'none', background: '#0d1b2a', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
@@ -100,7 +105,7 @@ export default function PostedJobs({ onTabChange }) {
                 </a>
             </div>
 
-            {/* Tabs */}
+            {/* Tabs
             <div style={{ display: 'flex', gap: '28px' }}>
                 {['Active Jobs', 'Completed Jobs'].map(tab => {
                     const active = tab === activeTab;
@@ -116,93 +121,25 @@ export default function PostedJobs({ onTabChange }) {
                         </button>
                     );
                 })}
-            </div>
+            </div> */}
             <div style={{ borderBottom: '1px solid #f0f0f0' }} />
-
-            {activeTab === 'Completed Jobs' ? (
-                <div style={{ padding: '24px 0' }}>
-
-                    {/* Completed cards grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
-                        {[
-                            { ref: '#ORD-8842', title: 'Garden Landscaping', date: 'Completed Sep 28, 2023', type: 'CONTRACTOR', contractor: 'Alex Thompson', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&q=80', cost: '£120' },
-                            { ref: '#ORD-7721', title: 'Annual Boiler Service', date: 'Completed Oct 05, 2023', type: 'COMPANY', contractor: 'Metro Plumbing', cost: '£120' },
-                            { ref: '#ORD-7721', title: 'Fuse Box Upgrade', date: 'Completed Oct 05, 2023', type: 'CONTRACTOR', contractor: 'Sparky Bros Ltd', cost: '£120' },
-                        ].map((job, i) => (
-                            <div key={i} style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0f0', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)', borderRadius: '6px', padding: '3px 8px' }}>COMPLETED</span>
-                                    <span style={{ fontSize: '11px', color: '#9ca3af' }}>REF: {job.ref}</span>
-                                </div>
-                                <div>
-                                    <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a', margin: '0 0 4px' }}>{job.title}</h3>
-                                    <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>📅 {job.date}</p>
-                                </div>
-                                <div style={{ background: '#f8f9fb', borderRadius: '10px', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    {job.avatar
-                                        ? <img src={job.avatar} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
-                                        : <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eef0f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🔧</div>
-                                    }
-                                    <div>
-                                        <p style={{ fontSize: '10px', fontWeight: 600, color: '#9ca3af', margin: '0 0 2px', letterSpacing: '0.06em' }}>{job.type}</p>
-                                        <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0d1b2a', margin: 0 }}>{job.contractor}</p>
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <div>
-                                        <p style={{ fontSize: '10px', color: '#9ca3af', margin: '0 0 2px', letterSpacing: '0.06em' }}>FINAL COST</p>
-                                        <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a', margin: 0 }}>{job.cost}</p>
-                                    </div>
-                                    <a href="#" style={{ fontSize: '12px', fontWeight: 600, color: '#FF7E00', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>View Invoice ↗</a>
-                                </div>
-                                <button style={{ width: '100%', padding: '11px', borderRadius: '10px', border: 'none', background: '#0d1b2a', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                                    📋 Leave a Review
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Project Insights */}
-                    <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #f0f0f0', padding: '24px', marginBottom: '24px' }}>
-                        <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '18px', color: '#0d1b2a', margin: '0 0 6px' }}>Project Insights</h3>
-                        <p style={{ fontSize: '13px', color: '#9ca3af', margin: '0 0 20px' }}>You've saved an average of 15% on projects this year by comparing professional quotes on ForemanDash.</p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
-                            <div>
-                                <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 4px', letterSpacing: '0.06em' }}>TOTAL SPENT</p>
-                                <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '22px', color: '#0d1b2a', margin: 0 }}>£12,840</p>
-                            </div>
-                            <div>
-                                <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 4px', letterSpacing: '0.06em' }}>COMPLETED</p>
-                                <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '22px', color: '#FF7E00', margin: 0 }}>12</p>
-                            </div>
-                            <div style={{ marginLeft: 'auto', width: '70px', height: '52px', borderRadius: '14px', background: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <FiCheckCircle style={{ color: "white", fontSize: "30px" }} />
-                            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '24px 40px', fontFamily: 'Work Sans, sans-serif' }}>
+                {loading ? (
+                    Array.from({ length: 2 }).map((_, i) => <SkeletonJobCard key={i} />)
+                ) : jobs.length === 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', textAlign: 'center' }}>
+                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#eef0f8', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '28px' }}>
+                            📋
                         </div>
+                        <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#374151', margin: '0 0 6px' }}>
+                            No posted jobs yet
+                        </p>
+                        <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0 }}>
+                            Once you post a job, it will show up here.
+                        </p>
                     </div>
-
-                    {/* Bottom two cards */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div style={{ background: '#0d1b2a', borderRadius: '16px', padding: '28px', position: 'relative', overflow: 'hidden' }}>
-                            <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '22px', color: '#fff', margin: '0 0 10px' }}>Need something else fixed?</h3>
-                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', margin: '0 0 20px', lineHeight: 1.6 }}>Our network of verified professionals is ready for your next project. Post a new job and receive quotes within hours.</p>
-                            <button style={{ padding: '12px 24px', borderRadius: '10px', border: 'none', background: '#FF7E00', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: 'pointer', letterSpacing: '0.05em' }}>
-                                POST A NEW JOB
-                            </button>
-                        </div>
-                        <div style={{ background: '#f0f2f7', borderRadius: '16px', padding: '28px' }}>
-                            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#FF7E00', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
-                                <span style={{ fontSize: '22px' }}>🛡️</span>
-                            </div>
-                            <h3 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '18px', color: '#0d1b2a', margin: '0 0 10px' }}>Guaranteed Work</h3>
-                            <p style={{ fontSize: '13px', color: '#6b7280', margin: 0, lineHeight: 1.6 }}>Every job booked through Blueprint Forge is protected by our Professional Satisfaction Guarantee. We ensure the right pros for the right price, every single time.</p>
-                        </div>
-                    </div>
-
-                </div>
-            ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '24px 40px', fontFamily: 'Work Sans, sans-serif' }}>
-                    {jobs.map((job) => (
+                ) : (
+                    jobs.map((job) => (
                         <JobOrderCard
                             key={job.id}
                             job={{
@@ -213,15 +150,18 @@ export default function PostedJobs({ onTabChange }) {
                                 date: new Date(job.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
                                 status: job.status.toLowerCase(),
                                 quotations: job._count.quotes,
+                                tradespersonMarkedComplete: job.tradespersonMarkedComplete,
+                                amount: job.acceptedQuotePrice, // need this from backend
                             }}
                             onDelete={() => handleDeleteClick(job.id)}
                             isDeleting={deletingId === job.id}
                             onEdit={() => setEditingJob(job)}
                             onReopen={() => setReopenDialog(job)}
+                            onPay={handlePay}
                         />
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
             {reopenDialog && (
                 <div
                     onClick={() => setReopenDialog(null)}
@@ -313,7 +253,7 @@ const jobs = [
     },
 ];
 
-function JobOrderCard({ job, onDelete, onEdit, isDeleting, onReopen }) {
+function JobOrderCard({ job, onDelete, onEdit, isDeleting, onReopen, onPay }) {
     const Icon = categoryIcons[job.category] || FiTool;
     const catStyle = categoryStyles[job.category] || categoryStyles.PLUMBING;
     const statusBadge = statusStyle[job.status] || statusStyle.open
@@ -356,19 +296,35 @@ function JobOrderCard({ job, onDelete, onEdit, isDeleting, onReopen }) {
                                 {job.quotations} RECEIVED
                             </span>
                         </div>
-                        <div
-                            onClick={() => job.status === 'no_availability' ? onReopen() : router.push(`quotes/${job.id}`)}
-                            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px 16px', borderRadius: '10px', border: 'none', background: job.status === 'NO_AVAILABILITY' ? '#ef4444' : '#FF7E00', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: 'pointer', textDecoration: 'none' }}
-                        >
-                            <FiFileText style={{ fontSize: '13px' }} />
-                            {job.status === 'open' ? 'VIEW QUOTES' : job.status === 'assigned' ? 'TALK TO TRADESPERSON' : job.status === 'no_availability' ? 'REOPEN JOB' : 'CONTACT US'}
-                        </div>
-                        <button onClick={onEdit} style={{ width: '100%', padding: '10px 16px', borderRadius: '10px', border: '1px solid #FF7E00', background: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#FF7E00', cursor: 'pointer' }}>
-                            EDIT JOB
-                        </button>
-                        <button onClick={onDelete} style={{ width: '100%', padding: '10px 16px', borderRadius: '10px', border: '1px solid #ef4444', background: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#ef4444', cursor: 'pointer' }}>
-                            DELETE JOB
-                        </button>
+
+                        {job.status === 'assigned' && job.tradespersonMarkedComplete ? (
+                            <button
+                                onClick={() => onPay(job.id)}
+                                disabled={job.paying}
+                                style={{ width: '100%', padding: '10px 16px', borderRadius: '10px', border: 'none', background: '#22c55e', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: job.paying ? 'not-allowed' : 'pointer' }}
+                            >
+                                {job.paying ? 'Redirecting...' : `PAY £${Number(job.amount).toFixed(2)} NOW`}
+                            </button>
+                        ) : (
+                            <div
+                                onClick={() => job.status === 'no_availability' ? onReopen() : router.push(`quotes/${job.id}`)}
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px 16px', borderRadius: '10px', border: 'none', background: job.status === 'NO_AVAILABILITY' ? '#ef4444' : '#FF7E00', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', cursor: 'pointer', textDecoration: 'none' }}
+                            >
+                                <FiFileText style={{ fontSize: '13px' }} />
+                                {job.status === 'open' ? 'VIEW QUOTES' : job.status === 'assigned' ? 'TALK TO TRADESPERSON' : job.status === 'no_availability' ? 'REOPEN JOB' : 'CONTACT US'}
+                            </div>
+                        )}
+
+                        {!['assigned'].includes(job.status) && (
+                            <>
+                                <button onClick={onEdit} style={{ width: '100%', padding: '10px 16px', borderRadius: '10px', border: '1px solid #FF7E00', background: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#FF7E00', cursor: 'pointer' }}>
+                                    EDIT JOB
+                                </button>
+                                <button onClick={onDelete} style={{ width: '100%', padding: '10px 16px', borderRadius: '10px', border: '1px solid #ef4444', background: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#ef4444', cursor: 'pointer' }}>
+                                    DELETE JOB
+                                </button>
+                            </>
+                        )}
                     </>
                 ) : (
                     <>
@@ -386,6 +342,37 @@ function JobOrderCard({ job, onDelete, onEdit, isDeleting, onReopen }) {
                         </button>
                     </>
                 )}
+            </div>
+        </div>
+    );
+}
+
+function SkeletonJobCard() {
+    return (
+        <div style={{ background: '#f0f2f7', borderRadius: '16px', padding: '24px', display: 'flex', gap: '20px', marginBottom: '20px' }}>
+            <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+
+            <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: '#e5e7eb', flexShrink: 0, animation: 'pulse 1.5s infinite' }} />
+
+            <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+                    <div style={{ width: '160px', height: '20px', borderRadius: '20px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+                    <div style={{ width: '80px', height: '20px', borderRadius: '20px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+                    <div style={{ width: '100px', height: '20px', borderRadius: '20px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+                </div>
+
+                <div style={{ width: '280px', height: '24px', borderRadius: '6px', background: '#e5e7eb', marginBottom: '12px', animation: 'pulse 1.5s infinite' }} />
+
+                <div style={{ width: '100%', height: '14px', borderRadius: '6px', background: '#e5e7eb', marginBottom: '8px', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ width: '95%', height: '14px', borderRadius: '6px', background: '#e5e7eb', marginBottom: '8px', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ width: '70%', height: '14px', borderRadius: '6px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+            </div>
+
+            <div style={{ width: '160px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
+                <div style={{ width: '120px', height: '24px', borderRadius: '6px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ width: '160px', height: '40px', borderRadius: '10px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ width: '160px', height: '40px', borderRadius: '10px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ width: '160px', height: '40px', borderRadius: '10px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
             </div>
         </div>
     );

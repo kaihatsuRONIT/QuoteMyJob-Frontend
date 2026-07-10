@@ -1,11 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiSearch, FiSend, FiPaperclip, FiSmile, FiPhone, FiInfo } from 'react-icons/fi';
+import { FiSearch, FiSend, FiPaperclip, FiSmile, FiPhone, FiInfo, FiMessageCircle } from 'react-icons/fi';
 import { io } from 'socket.io-client';
 import api from '@/lib/api';
 import { getAccessToken } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
 let socket = null;
+
+function EmptyChatState() {
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f0f2f7', fontFamily: 'Work Sans, sans-serif', minHeight: '100vh', gap: '12px' }}>
+      <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#eef0f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <FiMessageCircle style={{ fontSize: '28px', color: '#9ca3af' }} />
+      </div>
+      <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '15px', color: '#9ca3af', letterSpacing: '0.06em', margin: 0 }}>
+        SELECT A CHAT TO DISPLAY
+      </p>
+    </div>
+  );
+}
+
 
 function ChatWindow({ convo, currentUserId }) {
   const [messages, setMessages] = useState([]);
@@ -15,27 +29,22 @@ function ChatWindow({ convo, currentUserId }) {
   useEffect(() => {
     if (!convo) return;
 
-    // connect socket if not connected
     if (!socket) {
       socket = io(process.env.NEXT_PUBLIC_API_URL, {
         auth: { token: getAccessToken() },
       });
     }
 
-    // join conversation room
     socket.emit('joinConversation', convo.id);
 
-    // load initial messages
     socket.on('messages', (msgs) => {
       setMessages(msgs);
     });
 
-    // receive new messages
     socket.on('newMessage', (msg) => {
       setMessages(prev => [...prev, msg]);
     });
 
-    // mark as read
     socket.emit('markRead', convo.id);
 
     return () => {
@@ -43,10 +52,6 @@ function ChatWindow({ convo, currentUserId }) {
       socket.off('newMessage');
     };
   }, [convo]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   const send = () => {
     if (!input.trim() || !socket) return;
@@ -58,11 +63,13 @@ function ChatWindow({ convo, currentUserId }) {
     setInput('');
   };
 
+  const customerName = convo.customer?.name;
+  const customerAvatar = convo.customer?.avatar;
+
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f0f2f7', fontFamily: 'Work Sans, sans-serif', minHeight: '100vh' }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Work+Sans:wght@400;500;600&display=swap');`}</style>
 
-      {/* Header */}
       <div style={{ background: '#f0f2f7', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ position: 'relative' }}>
@@ -82,7 +89,6 @@ function ChatWindow({ convo, currentUserId }) {
         </div>
       </div>
 
-      {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px', scrollbarWidth: 'none' }}>
         {messages.map((msg) => {
           const isMe = msg.senderId === currentUserId;
@@ -112,7 +118,6 @@ function ChatWindow({ convo, currentUserId }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <div style={{ background: '#fff', borderTop: '1px solid #f0f0f0', padding: '14px 20px' }}>
         <input
           value={input}
@@ -142,13 +147,23 @@ export default function MessageComponent({ onSelect }) {
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get('/chat/conversations').then(({ data }) => {
       setConversations(data);
-      setSelected(data[0] || null);
-    });
+    }).finally(() => setLoading(false))
   }, []);
+
+  const filteredConversations = conversations.filter((c) => {
+    const query = search.toLowerCase().trim();
+    if (!query) return true;
+    const jobTitle = c.job?.title?.toLowerCase() || '';
+    const businessName = c.tradesperson?.businessName?.toLowerCase() || '';
+    const personName = c.tradesperson?.name?.toLowerCase() || '';
+    return jobTitle.includes(query) || businessName.includes(query) || personName.includes(query);
+  });
 
   return (
     <div style={{ display: 'flex', flex: 1, fontFamily: 'Work Sans, sans-serif' }}>
@@ -161,41 +176,78 @@ export default function MessageComponent({ onSelect }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#eef0f8', borderRadius: '12px', padding: '10px 14px', marginBottom: '20px' }}>
           <FiSearch style={{ color: '#9ca3af', fontSize: '15px', flexShrink: 0 }} />
-          <input placeholder="Search discussions..." style={{ border: 'none', outline: 'none', background: 'transparent', fontFamily: 'Work Sans, sans-serif', fontSize: '13px', color: '#374151', width: '100%' }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search discussions..."
+            style={{ border: 'none', outline: 'none', background: 'transparent', fontFamily: 'Work Sans, sans-serif', fontSize: '13px', color: '#374151', width: '100%' }}
+          />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {conversations.map((c) => {
-            const isActive = selected?.id === c.id;
-            const lastMsg = c.messages?.[0];
-            return (
-              <div key={c.id} onClick={() => { setSelected(c); onSelect?.(c); }}
-                style={{ display: 'flex', gap: '12px', padding: '12px 10px', borderRadius: '14px', background: isActive ? '#fff' : 'transparent', borderLeft: isActive ? '3px solid #FF7E00' : '3px solid transparent', cursor: 'pointer', transition: 'background 0.15s', boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.06)' : 'none' }}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; }}
-                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
-              >
-                <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#eef0f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a', flexShrink: 0 }}>
-                  {c.job?.title?.[0] || '?'}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                    <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0d1b2a' }}>{c.job?.title}</span>
-                    <span style={{ fontSize: '10px', color: '#9ca3af', flexShrink: 0 }}>
-                      {lastMsg ? new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                    </span>
+          {loading ? (
+            <SkeletonConversationList />
+          ) : filteredConversations.length === 0 ? (
+            <p style={{ fontSize: '13px', color: '#9ca3af', textAlign: 'center', marginTop: '20px' }}>No conversations found.</p>
+          ) : (
+            filteredConversations.map((c) => {
+              const isActive = selected?.id === c.id;
+              const lastMsg = c.messages?.[0];
+              const businessName = c.tradesperson?.businessName;
+              const personName = c.tradesperson?.name;
+
+              return (
+                <div key={c.id} onClick={() => { setSelected(c); onSelect?.(c); }}
+                  style={{ display: 'flex', gap: '12px', padding: '12px 10px', borderRadius: '14px', background: isActive ? '#fff' : 'transparent', borderLeft: isActive ? '3px solid #FF7E00' : '3px solid transparent', cursor: 'pointer', transition: 'background 0.15s', boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.06)' : 'none' }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#eef0f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '16px', color: '#0d1b2a', flexShrink: 0 }}>
+                    {(businessName || personName)?.[0] || '?'}
                   </div>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {lastMsg?.content || 'No messages yet'}
-                  </p>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                      <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '13px', color: '#0d1b2a' }}>
+                        {businessName || personName || c.job?.title}
+                      </span>
+                      <span style={{ fontSize: '10px', color: '#9ca3af', flexShrink: 0 }}>
+                        {lastMsg ? new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                      </span>
+                    </div>
+                    {businessName && personName && (
+                      <p style={{ fontSize: '11px', color: '#9ca3af', margin: '0 0 2px' }}>{personName}</p>
+                    )}
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {lastMsg?.content || 'No messages yet'}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 
       {/* Chat window */}
-      {selected && <ChatWindow convo={selected} currentUserId={user?.userId} />}
+      {selected ? <ChatWindow convo={selected} currentUserId={user?.userId} /> : <EmptyChatState />}
     </div>
+  );
+}
+
+function SkeletonConversationList() {
+  return (
+    <>
+      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} style={{ display: 'flex', gap: '12px', padding: '12px 10px' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#e5e7eb', flexShrink: 0, animation: 'pulse 1.5s infinite' }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ width: '70%', height: '13px', borderRadius: '4px', background: '#e5e7eb', marginBottom: '6px', animation: 'pulse 1.5s infinite' }} />
+            <div style={{ width: '50%', height: '11px', borderRadius: '4px', background: '#e5e7eb', marginBottom: '6px', animation: 'pulse 1.5s infinite' }} />
+            <div style={{ width: '85%', height: '12px', borderRadius: '4px', background: '#e5e7eb', animation: 'pulse 1.5s infinite' }} />
+          </div>
+        </div>
+      ))}
+    </>
   );
 }

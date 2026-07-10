@@ -1,6 +1,10 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 const HeroSection = () => {
+  const { user } = useAuth();
+  const router = useRouter();
   return (
     <section
       style={{
@@ -97,7 +101,7 @@ const HeroSection = () => {
               color: "#3a4a5a",
               lineHeight: 1.28,
               maxWidth: "528px",
-              maxHeight:"84px",
+              maxHeight: "84px",
               marginBottom: "20px",
             }}
           >
@@ -112,7 +116,7 @@ const HeroSection = () => {
               fontSize: "50px",
               fontWeight: 600,
               color: "#515F78",
-              lineHeight:"86px",
+              lineHeight: "86px",
               letterSpacing: "-0.01em",
               marginBottom: "28px",
             }}
@@ -145,7 +149,7 @@ const HeroSection = () => {
             <div style={{ width: "1px", height: "32px", background: "#e0e5ea", margin: "0 4px", flexShrink: 0 }} />
 
             {/* Postcode Field */}
-            <div className="bg-[#F0F3FF] rounded-lg px-1.5 py-1.5" style={{ display: "flex", alignItems: "center", gap: "8px", flex: "0 0 auto"}}>
+            <div className="bg-[#F0F3FF] rounded-lg px-1.5 py-1.5" style={{ display: "flex", alignItems: "center", gap: "8px", flex: "0 0 auto" }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a9aaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
                 <circle cx="12" cy="10" r="3" />
@@ -172,14 +176,24 @@ const HeroSection = () => {
                 whiteSpace: "nowrap",
                 transition: "background 0.15s",
               }}
+              onClick={() => {
+                if (!user) {
+                  router.push("/login");
+                } else if (user?.user?.role === "TRADESPERSON"){
+                  router.push(`/tradesperson/dashboard/find-jobs`);
+                }
+                else{
+                  router.push(`/customer/dashboard/new-job`);
+                }
+              }}
             >
-              Post my Job
+              {user && user?.user?.role === "CUSTOMER" ? "Post my Job" : "Find Jobs"}
             </button>
           </div>
         </div>
 
         {/* RIGHT COLUMN — Testimonial Card */}
-        <div className="right-col" style={{ flexShrink: 0, width: "479px"}}>
+        <div className="right-col" style={{ flexShrink: 0, width: "479px" }}>
           <div
             className="testimonial-card"
             style={{
@@ -187,9 +201,9 @@ const HeroSection = () => {
               borderRadius: "18px",
               padding: "20px 22px 18px",
               boxShadow: "0 8px 40px rgba(1,25,47,0.13)",
-              display:"flex",
-              flexDirection:"column",
-              gap:"25px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "25px",
               transform: "rotate(2deg)",
             }}
           >
@@ -211,7 +225,7 @@ const HeroSection = () => {
                     color: "#fff",
                     flexShrink: 0,
                   }}
-                  
+
                 >
                   <img className="rounded-md" src="AT.jpg" alt="Alex Thompson" />
                 </div>

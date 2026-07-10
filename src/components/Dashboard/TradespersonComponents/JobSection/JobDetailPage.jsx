@@ -15,6 +15,8 @@ export default function JobDetailPage({ jobId }) {
   const [loading, setLoading] = useState(true);
   const [myQuote, setMyQuote] = useState(null);
   const [quoteModal, setQuoteModal] = useState(false);
+  const [marking, setMarking] = useState(false);
+
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
@@ -32,6 +34,19 @@ export default function JobDetailPage({ jobId }) {
       } else {
         toast.error(e?.response?.data?.message || 'Failed to withdraw quote');
       }
+    }
+  };
+
+  const handleMarkComplete = async () => {
+    setMarking(true);
+    try {
+      await api.patch(`/jobs/${job.id}/complete`);
+      toast.success('Job marked as complete. Customer can now proceed with payment.');
+      setJob(prev => ({ ...prev, tradespersonMarkedComplete: true }));
+    } catch (e) {
+      toast.error(e?.response?.data?.message || 'Failed to mark as complete');
+    } finally {
+      setMarking(false);
     }
   };
 
@@ -62,6 +77,8 @@ export default function JobDetailPage({ jobId }) {
   const postedDate = new Date(job.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   const estimatedDate = job.estimatedDate ? new Date(job.estimatedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Flexible';
   const windowEnds = new Date(job.windowEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  console.log(myQuote.status)
   return (
     <>
       <div style={{ background: '#f8f9fb', minHeight: '100vh', fontFamily: 'Work Sans, sans-serif', padding: '32px 24px' }}>
@@ -89,7 +106,14 @@ export default function JobDetailPage({ jobId }) {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '22px', color: '#0d1b2a', margin: '0 0 4px' }}>{budget}</p>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)', borderRadius: '6px', padding: '3px 8px' }}>{myQuote.status}</span>
+                    <span style={{
+                      fontSize: '11px', fontWeight: 700,
+                      color: myQuote?.status === 'WITHDRAWN' ? '#9ca3af' : myQuote?.status === 'REJECTED' ? '#ef4444' : '#22c55e',
+                      background: myQuote?.status === 'WITHDRAWN' ? '#f3f4f6' : myQuote?.status === 'REJECTED' ? '#fef2f2' : 'rgba(34,197,94,0.1)',
+                      borderRadius: '6px', padding: '3px 8px'
+                    }}>
+                      {myQuote?.status}
+                    </span>
                   </div>
                 </div>
 
@@ -185,13 +209,30 @@ export default function JobDetailPage({ jobId }) {
                     </button>
                     {myQuote.status === 'ACCEPTED' && (
                       <button
-                        onClick={() => router.push(`/tradesperson/dashboard/chat/${job.id}`)}
+                        onClick={() => router.push(`/tradesperson/dashboard/chats`)}
                         style={{ width: '100%', padding: '13px', borderRadius: '10px', border: 'none', background: '#FF7E00', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', cursor: 'pointer', marginTop: '10px' }}
                       >
                         <div className='flex flex-row gap-2 justify-center'>
-                          <MdMessage className='mt-[3.3px]' size={20}/>
+                          <MdMessage className='mt-[3.3px]' size={20} />
                           <h1>Message Customer</h1>
                         </div>
+                      </button>
+                    )}
+
+                    {myQuote.status === 'ACCEPTED' && job.status === 'ASSIGNED' && (
+                      <button
+                        onClick={handleMarkComplete}
+                        disabled={marking || job.tradespersonMarkedComplete}
+                        style={{
+                          width: '100%', padding: '13px', borderRadius: '10px', border: 'none',
+                          background: job.tradespersonMarkedComplete ? '#e5e7eb' : '#22c55e',
+                          color: job.tradespersonMarkedComplete ? '#9ca3af' : '#fff',
+                          fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px',
+                          cursor: (marking || job.tradespersonMarkedComplete) ? 'not-allowed' : 'pointer',
+                          marginTop: '10px',
+                        }}
+                      >
+                        {job.tradespersonMarkedComplete ? '✓ Marked as Complete' : marking ? 'Marking...' : 'Mark Job as Complete'}
                       </button>
                     )}
                   </>
@@ -229,7 +270,7 @@ export default function JobDetailPage({ jobId }) {
       </div>
 
       {/* Quote Modal */}
-      {quoteModal && <QuoteModal jobId={jobId} onClose={() => setQuoteModal(false)} onSuccess={() => { setQuoteModal(false); toast.success('Quote submitted!'); router.push('/tradesperson/dashboard/overview'); }} />}
+      {quoteModal && <QuoteModal jobId={jobId} onClose={() => setQuoteModal(false)} onSuccess={() => { setQuoteModal(false); toast.success('Quote submitted!'); router.push('/tradesperson/dashboard/applied-jobs'); }} />}
     </>
   );
 }
