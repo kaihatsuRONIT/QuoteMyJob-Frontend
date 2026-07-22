@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -19,6 +20,29 @@ const NavBar = () => {
     { tag: "Blog", link: "/blog" },
     { tag: "Contact Us", link: "/contact-us" },
   ];
+  const [sending, SetSending] = useState(false)
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const isEmailVerified = user?.user?.isEmailVerified ?? user?.isEmailVerified;
+  const handleDashboard = (e) => {
+    if (!isEmailVerified) {
+      e.preventDefault();
+      setShowVerifyModal(true);
+    }
+  };
+  const handleVerify = async () => {
+    try {
+      SetSending(true);
+      const res = await api.post('/auth/resend-verification');
+      console.log('resend response:', res);
+      alert('Verification email sent! Please check your inbox.');
+      setShowVerifyModal(false);
+    } catch (err) {
+      console.log('resend error:', err);
+      alert('Failed to resend email. Please try again.');
+    } finally {
+      SetSending(false);
+    }
+  }
   return (
     <nav
       className="w-full sticky top-0 z-50"
@@ -58,13 +82,13 @@ const NavBar = () => {
             ) : user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {role === "customer" ? (
-                  <Link href={`${role}/dashboard/jobs-posted`}>
+                  <Link href={`${role}/dashboard/jobs-posted`} onClick={handleDashboard}>
                     <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
                       Open Dashboard
                     </button>
                   </Link>
                 ) : (
-                  <Link href={`${role}/dashboard/overview`}>
+                  <Link href={`${role}/dashboard/overview`} onClick={handleDashboard}>
                     <button style={{ backgroundColor: "#FF7E00" }} className="transition-colors duration-200 text-white font-bold text-sm px-9 py-5 rounded-xl cursor-pointer">
                       Open Dashboard
                     </button>
@@ -136,6 +160,31 @@ const NavBar = () => {
           </a>
         </div>
       </div>
+      {/* Email Verify Modal */}
+      {showVerifyModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', padding: '40px 32px', maxWidth: '420px', width: '100%', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+            <div style={{ fontSize: '40px', marginBottom: '16px' }}>✉️</div>
+            <h2 style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: '20px', color: '#0d1b2a', margin: '0 0 10px' }}>Verify your email</h2>
+            <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.6, margin: '0 0 24px' }}>
+              We will send a verification link to <strong style={{ color: '#0d1b2a' }}>{user?.user?.email ?? user?.email}</strong>. Please check your inbox and verify your email to access your dashboard.
+            </p>
+            <button
+              onClick={handleVerify}
+              disabled={sending}
+              style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', background: '#FF7E00', color: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+            >
+              {sending ? "Sending..." : "Send"}
+            </button>
+            <button
+              onClick={() => setShowVerifyModal(false)}
+              style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e5e7eb', background: '#fff', fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: '14px', cursor: 'pointer', color: '#374151', marginTop: '10px' }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

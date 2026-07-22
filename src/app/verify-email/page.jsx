@@ -27,8 +27,8 @@ export default function VerifyEmailPage() {
         <>
           <h2 style={{ color: '#22c55e', fontFamily: 'Manrope, sans-serif' }}>Email Verified!</h2>
           <p style={{ color: '#6b7280', marginBottom: '20px' }}>Your account is now active.</p>
-          <button onClick={() => router.push('/login')} style={{ padding: '12px 24px', background: '#FF7E00', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700 }}>
-            Go to Login
+          <button onClick={() => router.push('/')} style={{ padding: '12px 24px', background: '#FF7E00', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700 }}>
+            Go to Home
           </button>
         </>
       )}

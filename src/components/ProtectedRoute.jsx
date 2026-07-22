@@ -19,10 +19,16 @@ export default function ProtectedRoute({ children, requiredRole }) {
     if (requiredRole && role !== requiredRole.toLowerCase()) {
       router.replace("/login");
     }
+    const isEmailVerified = user?.user?.isEmailVerified ?? user?.isEmailVerified;
+    if (!isEmailVerified) {
+      router.replace("/verify-email-notice");
+      return;
+    }
   }, [user, loading, requiredRole]);
 
   const role = (user?.user?.role || user?.role)?.toLowerCase();
-  if (loading || !user || (requiredRole && role !== requiredRole.toLowerCase())) return null;
+  const isEmailVerified = user?.user?.isEmailVerified ?? user?.isEmailVerified;
+  if (loading || !user || (requiredRole && role !== requiredRole.toLowerCase()) || !isEmailVerified) return null;
 
   return <>{children}</>;
 }

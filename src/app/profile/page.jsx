@@ -80,7 +80,7 @@ export default function ProfilePage() {
       const endpoint = isTrader ? '/users/me/tradesperson' : '/users/me/customer';
       const payload = isTrader
         ? { name: form.name, phone: form.phone, businessName: form.businessName, bio: form.bio, licenseNo: form.licenseNo, insuranceDoc: form.insuranceDoc, address: form.address, avatar: avatarUrl, lat: form.lat, lng: form.lng, categoryIds: selectedCategoryIds }
-        : { name: form.name, phone: form.phone, avatar: avatarUrl,address: form.address }
+        : { name: form.name, phone: form.phone, avatar: avatarUrl, address: form.address }
       await api.patch(endpoint, payload);
       setSaved(true);
     } catch (e) {
