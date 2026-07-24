@@ -28,9 +28,9 @@ export default function Footer() {
 
         {/* Brand */}
         <div>
-          <img src="/websiteLogoBgRem.png" style={{ width: "auto", height: "70px", paddingLeft:"30px" }} />
-          <p style={{ fontSize: "13px", color: "#94a3b8", lineHeight: 1.7, margin: 0, maxWidth: "200px", margin: "auto", marginTop:"15px" }}>
-            Connecting the best trades with the best projects since 2024.
+          <img src="/websiteLogoBgRem.png" style={{ width: "auto", height: "70px", paddingLeft: "30px" }} />
+          <p style={{ fontSize: "13px", color: "#94a3b8", lineHeight: 1.7, margin: 0, maxWidth: "200px", margin: "auto", marginTop: "15px" }}>
+            Connecting the best trades with the best projects since 2004.
           </p>
         </div>
 
